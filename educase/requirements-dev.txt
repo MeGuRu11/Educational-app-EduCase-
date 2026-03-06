@@ -1,0 +1,11 @@
+pytest==8.3.4                   # Тест-фреймворк
+pytest-qt==4.4.0                # PySide6 тестирование (QTest)
+pytest-cov==6.0.0               # Покрытие тестами
+pytest-mock==3.14.0             # Моки и стабы
+black==24.10.0                  # Авто-форматирование кода
+ruff==0.8.4                     # Быстрый линтер (заменяет flake8+isort)
+mypy==1.13.0                    # Статическая типизация
+sqlalchemy[mypy]==2.0.36        # SQLAlchemy mypy плагин
+pre-commit==4.0.1               # Git pre-commit хуки
+pyinstaller==6.11.1             # Сборка .exe (Windows)
+cairosvg==2.7.1                 # SVG→PNG конвертация для tools/make_ico.py (dev only)

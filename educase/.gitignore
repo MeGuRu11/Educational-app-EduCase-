@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.spec
+
+# Virtual environment
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs & data (runtime, не в репо)
+*.log
+*.db
+*.db-wal
+*.db-shm
+
+# Generated (regenerate via tools/make_ico.py)
+# assets/icon.ico  — коммитим, чтобы работало без dev-зависимостей
+
+# PyInstaller
+*.exe
+*.dll
+
+# mypy / pytest
+.mypy_cache/
+.pytest_cache/
+htmlcov/
+.coverage

@@ -1,0 +1,52 @@
+# repositories/base_repo.py
+"""
+Generic репозиторий для базовых CRUD-операций с моделями SQLAlchemy.
+"""
+from typing import Generic, List, Optional, Type, TypeVar
+
+from sqlalchemy import delete, select
+from sqlalchemy.orm import Session
+
+from models.base import Base
+
+ModelType = TypeVar("ModelType", bound=Base)
+
+
+class BaseRepository(Generic[ModelType]):
+    def __init__(self, model: Type[ModelType], session: Session):
+        self.model = model
+        self.session = session
+
+    def get(self, id: int) -> Optional[ModelType]:
+        stmt = select(self.model).where(self.model.id == id)
+        return self.session.execute(stmt).scalar_one_or_none()
+
+    def get_all(self, skip: int = 0, limit: int = 100) -> List[ModelType]:
+        stmt = select(self.model).offset(skip).limit(limit)
+        return list(self.session.execute(stmt).scalars().all())
+
+    def add(self, obj: ModelType) -> ModelType:
+        self.session.add(obj)
+        self.session.commit()
+        self.session.refresh(obj)
+        return obj
+
+    def create(self, **kwargs) -> ModelType:
+        obj = self.model(**kwargs)
+        self.session.add(obj)
+        self.session.commit()
+        self.session.refresh(obj)
+        return obj
+
+    def update(self, obj: ModelType, **kwargs) -> ModelType:
+        for key, value in kwargs.items():
+            setattr(obj, key, value)
+        self.session.commit()
+        self.session.refresh(obj)
+        return obj
+
+    def delete(self, id: int) -> bool:
+        stmt = delete(self.model).where(self.model.id == id)
+        result = self.session.execute(stmt)
+        self.session.commit()
+        return result.rowcount > 0
