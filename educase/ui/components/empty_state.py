@@ -20,6 +20,7 @@ class EmptyState(QWidget):
         
         # Icon
         self.icon_lbl = QLabel()
+        self.icon_lbl.setStyleSheet("background: transparent;")
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         pixmap = get_icon(icon_name, COLORS["text_secondary"]).pixmap(64, 64)
         self.icon_lbl.setPixmap(pixmap)
@@ -27,7 +28,7 @@ class EmptyState(QWidget):
         # Title
         self.title_lbl = QLabel(title)
         self.title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.title_lbl.setStyleSheet(f"font-size: 18px; font-weight: 600; color: {COLORS['text_primary']};")
+        self.title_lbl.setStyleSheet(f"background: transparent; font-size: 18px; font-weight: 600; color: {COLORS['text_primary']};")
         
         layout.addWidget(self.icon_lbl)
         layout.addWidget(self.title_lbl)
@@ -37,7 +38,7 @@ class EmptyState(QWidget):
             self.subtitle_lbl = QLabel(subtitle)
             self.subtitle_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.subtitle_lbl.setWordWrap(True)
-            self.subtitle_lbl.setStyleSheet(f"font-size: 14px; color: {COLORS['text_secondary']};")
+            self.subtitle_lbl.setStyleSheet(f"background: transparent; font-size: 14px; color: {COLORS['text_secondary']};")
             layout.addWidget(self.subtitle_lbl)
             
         self.action_btn: Optional[QPushButton] = None

@@ -25,12 +25,12 @@ class CaseCard(Card):
         
         # Title
         self.title_lbl = QLabel(title)
-        self.title_lbl.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLORS['text_primary']}; border: none;")
+        self.title_lbl.setStyleSheet(f"background: transparent; font-size: 16px; font-weight: bold; color: {COLORS['text_primary']}; border: none;")
         self.title_lbl.setWordWrap(True)
         
         # Description
         self.desc_lbl = QLabel(description)
-        self.desc_lbl.setStyleSheet(f"color: {COLORS['text_secondary']}; border: none;")
+        self.desc_lbl.setStyleSheet(f"background: transparent; color: {COLORS['text_secondary']}; border: none;")
         self.desc_lbl.setWordWrap(True)
         self.desc_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         

@@ -39,7 +39,7 @@ class SandboxView(QWidget):
         l.setSpacing(12)
         
         lbl = QLabel(title)
-        lbl.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {COLORS['text_primary']};")
+        lbl.setStyleSheet(f"background: transparent; font-size: 18px; font-weight: bold; color: {COLORS['text_primary']};")
         l.addWidget(lbl)
         
         container = QWidget()
@@ -99,7 +99,9 @@ class SandboxView(QWidget):
             pb2.set_value(1.0, animated=False)
             
             pbl = QVBoxLayout()
-            pbl.addWidget(QLabel("Прогресс бар (40% и 100%)"))
+            progress_lbl = QLabel("Прогресс бар (40% и 100%)")
+            progress_lbl.setStyleSheet("background: transparent;")
+            pbl.addWidget(progress_lbl)
             pbl.addWidget(pb1)
             pbl.addWidget(pb2)
             

@@ -20,11 +20,12 @@ class StatCard(Card):
         
         # Значение
         self.val_lbl = QLabel(str(value))
-        self.val_lbl.setStyleSheet(f"font-size: 28px; font-weight: bold; color: {COLORS['text_primary']}; border: none;")
+        self.val_lbl.setStyleSheet(f"background: transparent; font-size: 28px; font-weight: bold; color: {COLORS['text_primary']}; border: none;")
         
         # Иконка
         icon_color = COLORS.get(color_type, COLORS["accent"])
         self.icon_lbl = QLabel()
+        self.icon_lbl.setStyleSheet("background: transparent;")
         self.icon_lbl.setPixmap(get_icon(icon_name, icon_color).pixmap(32, 32))
         
         top_layout.addWidget(self.val_lbl)
@@ -33,7 +34,7 @@ class StatCard(Card):
         
         # Описание
         self.desc_lbl = QLabel(label)
-        self.desc_lbl.setStyleSheet(f"color: {COLORS['text_secondary']}; border: none;")
+        self.desc_lbl.setStyleSheet(f"background: transparent; color: {COLORS['text_secondary']}; border: none;")
         
         main_layout.addLayout(top_layout)
         main_layout.addStretch()

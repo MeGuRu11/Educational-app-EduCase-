@@ -31,6 +31,8 @@ class SearchBar(QWidget):
             QLineEdit {{
                 background: transparent;
                 border: none;
+                padding: 0px;
+                padding-bottom: 2px;
                 color: {COLORS['text_primary']};
                 font-family: "Segoe UI Variable";
                 font-size: 14px;

@@ -28,16 +28,18 @@ class ImagePicker(QWidget):
         
         # Icon
         self.icon_lbl = QLabel()
+        self.icon_lbl.setStyleSheet("background: transparent;")
         self.icon_lbl.setPixmap(get_icon("image", COLORS["text_secondary"]).pixmap(48, 48))
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         # Text
         self.text_lbl = QLabel("Перетащите\nили кликните")
         self.text_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.text_lbl.setStyleSheet(f"color: {COLORS['text_secondary']};")
+        self.text_lbl.setStyleSheet(f"background: transparent; color: {COLORS['text_secondary']};")
         
         # Preview
         self.preview_lbl = QLabel()
+        self.preview_lbl.setStyleSheet("background: transparent;")
         self.preview_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.preview_lbl.hide()
         
