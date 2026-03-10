@@ -34,3 +34,8 @@ class CaseGroupRepository(BaseRepository[CaseGroup]):
 class CaseRepository(BaseRepository[Case]):
     def __init__(self, session: Session):
         super().__init__(Case, session)
+        
+    def get_all_published(self) -> List[Case]:
+        stmt = select(Case).where(Case.is_published == True).order_by(Case.id.desc())
+        return list(self.session.scalars(stmt).all())
+

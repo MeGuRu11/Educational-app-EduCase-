@@ -14,6 +14,7 @@ class EventBus(QObject):
 
     # Navigation
     navigate_to = Signal(str, object)  # screen_name, kwargs dict
+    start_case = Signal(int)  # case_id
 
     # Notifications
     show_toast = Signal(str, str)  # message, level ("success"/"error"/"info"/"warning")

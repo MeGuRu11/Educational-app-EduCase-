@@ -40,6 +40,7 @@ class MainWindow(QWidget):
         # Подписки на события
         bus.navigate_to.connect(self._on_navigate)
         bus.user_logged_in.connect(self._on_user_login)
+        bus.start_case.connect(self._on_start_case)
 
     def _center(self) -> None:
         screen = QApplication.primaryScreen().geometry()
@@ -120,9 +121,22 @@ class MainWindow(QWidget):
     def _on_navigate(self, route: str, params: dict) -> None:
         if route in self.screens:
             self.content_stack.setCurrentWidget(self.screens[route])
-            # Обновление заголовка можно привязать к роуту более умно, здесь просто capitalizing
+            # Простая анимация появления экрана
+            import PySide6.QtWidgets as QtWidgets
+            from PySide6.QtCore import QPropertyAnimation, QEasingCurve
+            
+            effect = QtWidgets.QGraphicsOpacityEffect(self.screens[route])
+            self.screens[route].setGraphicsEffect(effect)
+            self.anim = QPropertyAnimation(effect, b"opacity")
+            self.anim.setDuration(250)
+            self.anim.setStartValue(0.0)
+            self.anim.setEndValue(1.0)
+            self.anim.setEasingCurve(QEasingCurve.Type.InOutSine)
+            self.anim.start()
+
+            # Обновление заголовка
             titles = {
-                "home": "Главная", "cases": "Кейсы", "results": "Результаты", 
+                "home": "Главная", "cases": "Мои кейсы", "results": "Мои результаты", 
                 "profile": "Профиль", "groups": "Группы", "analytics": "Аналитика",
                 "users": "Пользователи", "system": "Настройки", "logs": "Логи",
                 "sandbox": "UI Песочница"
@@ -135,9 +149,32 @@ class MainWindow(QWidget):
         if not user:
             return
             
+        role = user.role.name
+        
+        # Подгрузка реальных экранов в зависимости от роли
+        if role == "student":
+            from ui.screens.student.dashboard import StudentDashboard
+            from ui.screens.student.my_cases import MyCasesScreen
+            from ui.screens.student.my_results import MyResultsScreen
+            from ui.screens.student.profile import StudentProfileScreen
+            
+            # Удаляем заглушки
+            for key in ["home", "cases", "results", "profile"]:
+                if key in self.screens:
+                    self.content_stack.removeWidget(self.screens[key])
+                    self.screens[key].deleteLater()
+                    
+            self.screens["home"] = StudentDashboard(self.container)
+            self.screens["cases"] = MyCasesScreen(self.container)
+            self.screens["results"] = MyResultsScreen(self.container)
+            self.screens["profile"] = StudentProfileScreen(self.container)
+            
+            for key in ["home", "cases", "results", "profile"]:
+                self.content_stack.addWidget(self.screens[key])
+            
         # Настройка сайдбара под роль
         self.sidebar.name_lbl.setText(user.full_name)
-        self.sidebar.build_navigation(user.role.name)
+        self.sidebar.build_navigation(role)
 
     @Slot()
     def toggle_maximize(self) -> None:
@@ -149,3 +186,45 @@ class MainWindow(QWidget):
             self._is_maximized = True
             self.setGeometry(QApplication.primaryScreen().availableGeometry())
         self.update() # Вызов paintEvent для перерисовки рамки
+
+    @Slot(int)
+    def _on_start_case(self, case_id: int) -> None:
+        from ui.screens.student.case_player import CasePlayer
+        import app
+        
+        # 1. Загружаем данные кейса
+        case = self.container.case_service.get_case(case_id)
+        if not case:
+            return
+            
+        # 2. Формируем структуру данных (mock) так как пока нет полноценного редактора заданий
+        case_data = {
+            "name": case.title,
+            "time_limit_min": case.time_limit_minutes or 0,
+            "tasks": [
+                {
+                    "id": 1,
+                    "task_type": "single_choice",
+                    "title": "Тестовое задание",
+                    "body": f"Это тестовое задание для кейса '{case.title}'",
+                    "max_score": 10,
+                    "topic": "Общая проверка",
+                    "configuration": {
+                        "options": [
+                            {"id": 1, "text": "Вариант 1", "is_correct": True},
+                            {"id": 2, "text": "Вариант 2", "is_correct": False},
+                        ]
+                    }
+                }
+            ]
+        }
+        
+        # CasePlayer modal window (передаём case_data и attempt_service)
+        player = CasePlayer(case_data, self.container.attempt_service, attempt_id=1, parent=self)
+        player.exec()
+        
+        # Обновить дашборд / результаты после закрытия плеера
+        if "home" in self.screens and hasattr(self.screens["home"], "presenter"):
+            self.screens["home"].presenter.load_data()
+        if "results" in self.screens and hasattr(self.screens["results"], "presenter"):
+            self.screens["results"].presenter.load_results()

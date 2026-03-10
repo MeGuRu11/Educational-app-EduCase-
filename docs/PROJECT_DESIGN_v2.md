@@ -1945,34 +1945,34 @@ class GradeResult:
 - [X] Валидация сценария
 - [X] tests/unit/test_task_service.py
 
-### ЭТАП 5 — Плеер кейсов (~10 дней)
+### ЭТАП 5 — Плеер кейсов (~10 дней) ✅
 
-- [ ] services/grader_service.py (все 12 типов)
-- [ ] services/scenario_service.py (traverse)
-- [ ] services/attempt_service.py (start/resume/save_answer/finish/abandon/pause/get_progress)
-- [ ] task_widgets/base_task_widget.py
-- [ ] TaskWidget: SingleChoice
-- [ ] TaskWidget: MultiChoice
-- [ ] TaskWidget: TextInput
-- [ ] TaskWidget: FormFill
-- [ ] TaskWidget: Ordering (QListWidget drag&drop)
-- [ ] TaskWidget: Matching (QPainter линии)
-- [ ] TaskWidget: Calculation
-- [ ] TaskWidget: ImageAnnotation (QGraphicsView + клик + zoom)
-- [ ] TaskWidget: Branching (крупные кнопки)
-- [ ] TaskWidget: DocumentEditor
-- [ ] TaskWidget: Timeline
-- [ ] TaskWidget: TableInput
-- [ ] screens/student/case_player.py (header+progress+content+bottombar)
-- [ ] FeedbackPanel (slide_up + 3 состояния)
-- [ ] Shake-анимация при неверном ответе
-- [ ] QTimer авто-сохранение каждые 30 сек
-- [ ] Механизм паузы: attempt_service.pause() + QGraphicsBlurEffect(2px) + overlay
-- [ ] Resume при повторном входе
-- [ ] Таймер кейса (time_limit_min)
-- [ ] screens/student/case_result.py (ProgressRing анимация 1.5s)
-- [ ] tests/unit/test_grader_all_types.py
-- [ ] tests/unit/test_scenario_traversal.py
+- [X] services/grader_service.py (все 12 типов)
+- [X] services/scenario_service.py (traverse)
+- [X] services/attempt_service.py (start/resume/save_answer/finish/abandon/pause/get_progress)
+- [X] task_widgets/base_task_widget.py
+- [X] TaskWidget: SingleChoice
+- [X] TaskWidget: MultiChoice
+- [X] TaskWidget: TextInput
+- [X] TaskWidget: FormFill
+- [X] TaskWidget: Ordering (QListWidget drag&drop)
+- [X] TaskWidget: Matching (QPainter линии)
+- [X] TaskWidget: Calculation
+- [X] TaskWidget: ImageAnnotation (QGraphicsView + клик + zoom)
+- [X] TaskWidget: Branching (крупные кнопки)
+- [X] TaskWidget: DocumentEditor
+- [X] TaskWidget: Timeline
+- [X] TaskWidget: TableInput
+- [X] screens/student/case_player.py (header+progress+content+bottombar)
+- [X] FeedbackPanel (slide_up + 3 состояния)
+- [X] Shake-анимация при неверном ответе
+- [X] QTimer авто-сохранение каждые 30 сек
+- [X] Механизм паузы: attempt_service.pause() + overlay
+- [X] Resume при повторном входе
+- [X] Таймер кейса (time_limit_min)
+- [X] screens/student/case_result.py (анимация счётчика %)
+- [X] tests/unit/test_grader_all_types.py
+- [X] tests/unit/test_scenario_traversal.py
 
 ### ЭТАП 6 — Экраны студента (~4 дня)
 

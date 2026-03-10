@@ -24,6 +24,9 @@ class CaseService:
 
     def get_case(self, case_id: int) -> Optional[Case]:
         return self.case_repo.get(case_id)
+        
+    def get_available_cases(self) -> List[Case]:
+        return self.case_repo.get_all_published()
 
     def publish_case(self, case_id: int) -> Optional[Case]:
         case = self.case_repo.get(case_id)

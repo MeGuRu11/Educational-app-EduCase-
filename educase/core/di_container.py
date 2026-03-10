@@ -64,8 +64,16 @@ def build_container() -> Container:
     user_repo = UserRepository(session)
     group_repo = GroupRepository(session)
     
+    from repositories.content_repo import CaseRepository
+    case_repo = CaseRepository(session)
+    
+    from repositories.attempt_repo import AttemptRepository
+    attempt_repo = AttemptRepository(session)
+    
     c.user_repo = user_repo
     c.group_repo = group_repo
+    c.case_repo = case_repo
+    c.attempt_repo = attempt_repo
     
     # ── Services ──────────────────────────────────────────────────────────
     from services.auth_service import AuthService
@@ -75,5 +83,11 @@ def build_container() -> Container:
     c.user_service = user_service
     
     c.auth_service = AuthService(user_repo)
+    
+    from services.case_service import CaseService
+    c.case_service = CaseService(session)
+    
+    from services.attempt_service import AttemptService
+    c.attempt_service = AttemptService(session)
 
     return c
