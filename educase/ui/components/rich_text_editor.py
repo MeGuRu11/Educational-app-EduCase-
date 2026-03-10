@@ -1,7 +1,7 @@
 # ui/components/rich_text_editor.py
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QToolBar
 from PySide6.QtGui import QTextListFormat, QTextCursor, QFont
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 
 from ui.styles.theme import COLORS
 from ui.styles.icons import get_icon
@@ -10,6 +10,8 @@ class RichTextEditor(QWidget):
     """
     Простой WYSIWYG редактор для форматирования текста заданий.
     """
+    text_changed = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         
@@ -20,6 +22,7 @@ class RichTextEditor(QWidget):
         self._setup_toolbar()
         
         self.editor = QTextEdit()
+        self.editor.textChanged.connect(self.text_changed.emit)
         font = QFont("Segoe UI Variable", 11)
         self.editor.setFont(font)
         self.editor.setStyleSheet(f"""

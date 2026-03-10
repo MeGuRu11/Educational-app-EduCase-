@@ -8,19 +8,19 @@
 
 ## CHANGELOG v1.0 → v2.0 (что добавлено)
 
-| Раздел             | Что добавлено                                                             |
-| ------------------ | ------------------------------------------------------------------------- |
-| Зависимости        | Полный `requirements.txt` с точными версиями + обоснование каждой         |
-| БД                 | Полная схема: все индексы, constraints, триггеры, WAL-режим, вакуум       |
-| Архитектура        | DI-контейнер, EventBus, threading-модель, стратегия ошибок                |
-| UI                 | Детальное описание **каждого** экрана (21 экран) — все виджеты, состояния |
-| Анимации           | Полная спецификация каждой анимации с параметрами Qt                      |
-| SVG-иконки         | Полный каталог 55 иконок inline в Python                                  |
-| Компоненты         | Все переиспользуемые виджеты с полным API                                 |
-| Config             | Полная система конфигурации (файл + env + runtime)                        |
-| Безопасность       | Стратегия хэширования, сессия, защита от инъекций                         |
-| Файловое хранилище | Стратегия хранения медиафайлов, именование, лимиты                        |
-| TODO               | Детализированы все шаги, добавлены пропущенные задачи                     |
+| Раздел                        | Что добавлено                                                                                                             |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Зависимости              | Полный `requirements.txt` с точными версиями + обоснование каждой                            |
+| БД                                | Полная схема: все индексы, constraints, триггеры, WAL-режим, вакуум                           |
+| Архитектура              | DI-контейнер, EventBus, threading-модель, стратегия ошибок                                              |
+| UI                                  | Детальное описание**каждого** экрана (21 экран) — все виджеты, состояния |
+| Анимации                    | Полная спецификация каждой анимации с параметрами Qt                                      |
+| SVG-иконки                    | Полный каталог 55 иконок inline в Python                                                                          |
+| Компоненты                | Все переиспользуемые виджеты с полным API                                                            |
+| Config                              | Полная система конфигурации (файл + env + runtime)                                                       |
+| Безопасность            | Стратегия хэширования, сессия, защита от инъекций                                           |
+| Файловое хранилище | Стратегия хранения медиафайлов, именование, лимиты                                        |
+| TODO                                | Детализированы все шаги, добавлены пропущенные задачи                                  |
 
 ---
 
@@ -81,15 +81,15 @@ cairosvg==2.7.1                 # SVG→PNG конвертация для tools/
 
 ### 1.3 Что намеренно НЕ включено и почему
 
-| Библиотека     | Почему не берём                            |
-| -------------- | ------------------------------------------ |
-| PyQt6          | PySide6 — официальный Qt, LGPL без royalty |
-| Django/FastAPI | Офлайн-приложение, не нужен web-сервер     |
-| Qt-Material    | Вся тема своя — полный контроль            |
-| pydantic       | Используем SQLAlchemy dataclasses          |
-| aiohttp        | Нет сетевых запросов по условию задачи     |
-| redis          | Нет сервера, кэш — in-memory dict          |
-| celery         | Нет очередей, тяжёлые задачи — QThread     |
+| Библиотека | Почему не берём                                            |
+| -------------------- | ----------------------------------------------------------------------- |
+| PyQt6                | PySide6 — официальный Qt, LGPL без royalty               |
+| Django/FastAPI       | Офлайн-приложение, не нужен web-сервер     |
+| Qt-Material          | Вся тема своя — полный контроль               |
+| pydantic             | Используем SQLAlchemy dataclasses                             |
+| aiohttp              | Нет сетевых запросов по условию задачи |
+| redis                | Нет сервера, кэш — in-memory dict                         |
+| celery               | Нет очередей, тяжёлые задачи — QThread         |
 
 ---
 
@@ -1844,106 +1844,106 @@ class GradeResult:
 
 ### ЭТАП 0 — Scaffolding (~3 дня)
 
-- [x] main.py (точка входа: QApp + QFontDatabase.addApplicationFont + \_init_dirs + SplashScreen + run_migrations + build_container + LoginWindow, см. §15.4)
-- [x] app.py (модульный синглтон: current_user, config, get_session)
-- [x] pyproject.toml (black, ruff, mypy конфиги)
-- [x] requirements.txt и requirements-dev.txt с точными версиями
-- [x] Вся структура папок (mkdir -p)
-- [x] config.py: AppConfig, DATA_DIR, MEDIA_LIMITS
-- [x] core/logger.py: loguru, ротация, sink→system_logs
-- [x] core/exceptions.py: все типы ошибок
-- [x] core/event_bus.py: EventBus singleton
-- [x] core/di_container.py: Container (сборка зависимостей)
-- [x] core/thread_pool.py: Worker, run_async
-- [x] core/validators.py: validate_username, validate_password, validate_image
-- [x] ui/styles/theme.py: все токены
-- [x] ui/styles/icons.py: 55 иконок inline
-- [x] ui/styles/stylesheet.py: глобальный QSS
-- [x] ui/styles/animations.py: все 14 анимаций (см. §7)
-- [x] pre-commit: black + ruff хуки
-- [x] ui/windows/splash_window.py — SplashScreen (paintEvent + анимации, §15.3 + §16)
-- [x] assets/icon_master.svg — мастер SVG иконки (256×256 viewBox, §14)
-- [x] tools/make_ico.py — генерация assets/icon.ico (cairosvg + Pillow, §14.2 + §16.1)
-- [x] Запустить make_ico.py → assets/icon.ico
-- [x] QApplication.setWindowIcon(QIcon("assets/icon.ico")) в main.py
+- [X] main.py (точка входа: QApp + QFontDatabase.addApplicationFont + \_init_dirs + SplashScreen + run_migrations + build_container + LoginWindow, см. §15.4)
+- [X] app.py (модульный синглтон: current_user, config, get_session)
+- [X] pyproject.toml (black, ruff, mypy конфиги)
+- [X] requirements.txt и requirements-dev.txt с точными версиями
+- [X] Вся структура папок (mkdir -p)
+- [X] config.py: AppConfig, DATA_DIR, MEDIA_LIMITS
+- [X] core/logger.py: loguru, ротация, sink→system_logs
+- [X] core/exceptions.py: все типы ошибок
+- [X] core/event_bus.py: EventBus singleton
+- [X] core/di_container.py: Container (сборка зависимостей)
+- [X] core/thread_pool.py: Worker, run_async
+- [X] core/validators.py: validate_username, validate_password, validate_image
+- [X] ui/styles/theme.py: все токены
+- [X] ui/styles/icons.py: 55 иконок inline
+- [X] ui/styles/stylesheet.py: глобальный QSS
+- [X] ui/styles/animations.py: все 14 анимаций (см. §7)
+- [X] pre-commit: black + ruff хуки
+- [X] ui/windows/splash_window.py — SplashScreen (paintEvent + анимации, §15.3 + §16)
+- [X] assets/icon_master.svg — мастер SVG иконки (256×256 viewBox, §14)
+- [X] tools/make_ico.py — генерация assets/icon.ico (cairosvg + Pillow, §14.2 + §16.1)
+- [X] Запустить make_ico.py → assets/icon.ico
+- [X] QApplication.setWindowIcon(QIcon("assets/icon.ico")) в main.py
 
 ### ЭТАП 1 — БД + Auth (~4 дня)
 
-- [x] models/base.py, models/user.py
-- [x] core/database.py + PRAGMA
-- [x] core/db_maintenance.py
-- [x] Alembic init + migration 001
-- [x] repositories/base.py (generic)
-- [x] repositories/user_repo.py
-- [x] repositories/group_repo.py
-- [x] services/auth_service.py (login, logout, lockout, permission check)
-- [x] services/user_service.py (create, update, change_password)
-- [x] Seed: роли + 3 тестовых пользователя + 3 дисциплины
-- [x] ui/components/toast.py (ToastManager, 4 типа, анимации)
-- [x] ui/windows/login_window.py (drag, блокировка, анимации)
-- [x] ui/windows/main_window.py (titlebar, QStackedWidget)
-- [x] ui/components/sidebar.py (анимации expand/collapse, role-aware nav)
-- [x] ui/components/topbar.py
-- [x] tests/conftest.py (fixtures: in_memory_db с StaticPool, session, container, seed_users)
-- [x] tests/unit/test_auth.py
+- [X] models/base.py, models/user.py
+- [X] core/database.py + PRAGMA
+- [X] core/db_maintenance.py
+- [X] Alembic init + migration 001
+- [X] repositories/base.py (generic)
+- [X] repositories/user_repo.py
+- [X] repositories/group_repo.py
+- [X] services/auth_service.py (login, logout, lockout, permission check)
+- [X] services/user_service.py (create, update, change_password)
+- [X] Seed: роли + 3 тестовых пользователя + 3 дисциплины
+- [X] ui/components/toast.py (ToastManager, 4 типа, анимации)
+- [X] ui/windows/login_window.py (drag, блокировка, анимации)
+- [X] ui/windows/main_window.py (titlebar, QStackedWidget)
+- [X] ui/components/sidebar.py (анимации expand/collapse, role-aware nav)
+- [X] ui/components/topbar.py
+- [X] tests/conftest.py (fixtures: in_memory_db с StaticPool, session, container, seed_users)
+- [X] tests/unit/test_auth.py
 
 ### ЭТАП 2 — Модели контента (~4 дня) ✅
 
-- [x] models/content.py (Discipline, Topic, Case, CaseGroup, Module)
-- [x] models/task.py (Task + 8 подтаблиц)
-- [x] models/scenario.py
-- [x] models/media.py, models/system.py, models/attempt.py
-- [x] migration 002_content_schema (disciplines/topics/cases/modules/tasks/scenarios/attempts/media)
-- [x] migration 003_system_settings (system_settings, system_logs)
-- [x] repositories/case_repo.py, module_repo.py, task_repo.py, scenario_repo.py
-- [x] repositories/media_repo.py, attempt_repo.py, analytics_repo.py
-- [x] services/case_service.py, module_service.py, task_service.py
-- [x] services/media_service.py (upload/validate/resize)
-- [x] services/backup_service.py
-- [x] tests/unit/test_services.py
+- [X] models/content.py (Discipline, Topic, Case, CaseGroup, Module)
+- [X] models/task.py (Task + 8 подтаблиц)
+- [X] models/scenario.py
+- [X] models/media.py, models/system.py, models/attempt.py
+- [X] migration 002_content_schema (disciplines/topics/cases/modules/tasks/scenarios/attempts/media)
+- [X] migration 003_system_settings (system_settings, system_logs)
+- [X] repositories/case_repo.py, module_repo.py, task_repo.py, scenario_repo.py
+- [X] repositories/media_repo.py, attempt_repo.py, analytics_repo.py
+- [X] services/case_service.py, module_service.py, task_service.py
+- [X] services/media_service.py (upload/validate/resize)
+- [X] services/backup_service.py
+- [X] tests/unit/test_services.py
 
 ### ЭТАП 3 — UI-компоненты (~5 дней) ✅
 
-- [x] card.py + hover-анимация
-- [x] case_card.py (cover, badge, progress, button)
-- [x] stat_card.py
-- [x] badge.py (4 цвета)
-- [x] avatar.py (инициалы fallback)
-- [x] progress_ring.py (QPainter + QPropertyAnimation)
-- [x] progress_bar.py (animated fill)
-- [x] dialog.py (BaseDialog, ConfirmDialog, InputDialog)
-- [x] table_view.py (sorting, hover rows, striped)
-- [x] search_bar.py (expand animation)
-- [x] empty_state.py
-- [x] loading_overlay.py (spinner + blur)
-- [x] rich_text_editor.py # Основан на QTextEdit; toolbar: жирный/курсив/список/заголовок/вставка изображения; экспортирует HTML (сохраняется в tasks.body и cases.description)
-- [x] image_picker.py (drag&drop + dialog + preview)
-- [x] accordion.py, stepper.py, color_picker.py, score_badge.py
+- [X] card.py + hover-анимация
+- [X] case_card.py (cover, badge, progress, button)
+- [X] stat_card.py
+- [X] badge.py (4 цвета)
+- [X] avatar.py (инициалы fallback)
+- [X] progress_ring.py (QPainter + QPropertyAnimation)
+- [X] progress_bar.py (animated fill)
+- [X] dialog.py (BaseDialog, ConfirmDialog, InputDialog)
+- [X] table_view.py (sorting, hover rows, striped)
+- [X] search_bar.py (expand animation)
+- [X] empty_state.py
+- [X] loading_overlay.py (spinner + blur)
+- [X] rich_text_editor.py # Основан на QTextEdit; toolbar: жирный/курсив/список/заголовок/вставка изображения; экспортирует HTML (сохраняется в tasks.body и cases.description)
+- [X] image_picker.py (drag&drop + dialog + preview)
+- [X] accordion.py, stepper.py, color_picker.py, score_badge.py
 
-### ЭТАП 4 — Конструктор заданий (~12 дней)
+### ЭТАП 4 — Конструктор заданий (~12 дней) ✅
 
-- [ ] task_constructor/base_editor.py (AbstractTaskEditor)
-- [ ] constructor_dialog.py (3-panel layout)
-- [ ] type_selector.py (12 карточек типов)
-- [ ] preview_panel.py (live TaskWidget)
-- [ ] Editor: SingleChoice
-- [ ] Editor: MultiChoice
-- [ ] Editor: TextInput (таблица ключевых слов + синонимы)
-- [ ] Editor: FormFill (конструктор полей)
-- [ ] Editor: Ordering (drag&drop реорганизация)
-- [ ] Editor: Matching (два столбца с соединениями)
-- [ ] Editor: Calculation (значение + допуск + единицы)
-- [ ] Editor: ImageAnnotation (upload + рисование зон)
-- [ ] Editor: Timeline (ось + события)
-- [ ] Editor: TableInput (настройка строк/столбцов/значений)
-- [ ] Editor: DocumentEditor (загрузка .docx + маркировка полей)
-- [ ] Editor: Branching (открывает ScenarioBuilder)
-- [ ] scenario_builder/graph_scene.py
-- [ ] scenario_builder/graph_view.py (zoom, pan, fit)
-- [ ] scenario_builder/node_item.py (drag, contextmenu, double-click edit)
-- [ ] scenario_builder/edge_item.py (кривая Безье + стрелка + label)
-- [ ] Валидация сценария
-- [ ] tests/unit/test_task_service.py
+- [X] task_constructor/base_editor.py (AbstractTaskEditor)
+- [X] constructor_dialog.py (3-panel layout)
+- [X] type_selector.py (12 карточек типов)
+- [X] preview_panel.py (live TaskWidget)
+- [X] Editor: SingleChoice
+- [X] Editor: MultiChoice
+- [X] Editor: TextInput (таблица ключевых слов + синонимы)
+- [X] Editor: FormFill (конструктор полей)
+- [X] Editor: Ordering (drag&drop реорганизация)
+- [X] Editor: Matching (два столбца с соединениями)
+- [X] Editor: Calculation (значение + допуск + единицы)
+- [X] Editor: ImageAnnotation (upload + рисование зон)
+- [X] Editor: Timeline (ось + события)
+- [X] Editor: TableInput (настройка строк/столбцов/значений)
+- [X] Editor: DocumentEditor (загрузка .docx + маркировка полей)
+- [X] Editor: Branching (открывает ScenarioBuilder)
+- [X] scenario_builder/graph_scene.py
+- [X] scenario_builder/graph_view.py (zoom, pan, fit)
+- [X] scenario_builder/node_item.py (drag, contextmenu, double-click edit)
+- [X] scenario_builder/edge_item.py (кривая Безье + стрелка + label)
+- [X] Валидация сценария
+- [X] tests/unit/test_task_service.py
 
 ### ЭТАП 5 — Плеер кейсов (~10 дней)
 
@@ -2040,27 +2040,27 @@ class GradeResult:
 - [ ] README.md, USER_GUIDE.md, CHANGELOG.md
 - [ ] Inno Setup installer (.iss файл)
 - [ ] ⚠️ Подпись .exe: без code signing Windows SmartScreen блокирует запуск.
-      Варианты: self-signed cert (предупреждение, но не блок) или EV cert (~$300/год).
-      Для внутреннего использования в ВМедА — достаточно добавить cert в доверенные через GPO.
+  Варианты: self-signed cert (предупреждение, но не блок) или EV cert (~$300/год).
+  Для внутреннего использования в ВМедА — достаточно добавить cert в доверенные через GPO.
 
 ---
 
 ## 11. МАТРИЦА ПРАВ ДОСТУПА
 
-| Действие                      | student | teacher | admin |
-| ----------------------------- | :-----: | :-----: | :---: |
-| Проходить кейсы               |   ✅    |   ✅    |  ✅   |
-| Личная аналитика              |   ✅    |   ✅    |  ✅   |
-| Создавать/редактировать кейсы |   ❌    |   ✅    |  ✅   |
-| Публиковать кейсы             |   ❌    |   ✅    |  ✅   |
-| Управлять группами            |   ❌    |   ✅    |  ✅   |
-| Аналитика группы              |   ❌    |   ✅    |  ✅   |
-| Экспорт отчётов               |   ❌    |   ✅    |  ✅   |
-| CRUD пользователей            |   ❌    |   ❌    |  ✅   |
-| Управление ролями             |   ❌    |   ❌    |  ✅   |
-| Системные настройки           |   ❌    |   ❌    |  ✅   |
-| Бэкап/восстановление          |   ❌    |   ❌    |  ✅   |
-| Системные логи                |   ❌    |   ❌    |  ✅   |
+| Действие                                         | student | teacher | admin |
+| -------------------------------------------------------- | :-----: | :-----: | :---: |
+| Проходить кейсы                            |   ✅   |   ✅   |  ✅  |
+| Личная аналитика                          |   ✅   |   ✅   |  ✅  |
+| Создавать/редактировать кейсы |   ❌   |   ✅   |  ✅  |
+| Публиковать кейсы                        |   ❌   |   ✅   |  ✅  |
+| Управлять группами                      |   ❌   |   ✅   |  ✅  |
+| Аналитика группы                          |   ❌   |   ✅   |  ✅  |
+| Экспорт отчётов                            |   ❌   |   ✅   |  ✅  |
+| CRUD пользователей                          |   ❌   |   ❌   |  ✅  |
+| Управление ролями                        |   ❌   |   ❌   |  ✅  |
+| Системные настройки                    |   ❌   |   ❌   |  ✅  |
+| Бэкап/восстановление                  |   ❌   |   ❌   |  ✅  |
+| Системные логи                              |   ❌   |   ❌   |  ✅  |
 
 ---
 
@@ -2086,25 +2086,25 @@ bcrypt.checkpw(password.encode("utf-8"), stored_hash)  # ✅ не input() — в
 
 ## 13. MVP → V2 → V3
 
-| Фича                                | MVP | V2  | V3  |
-| ----------------------------------- | :-: | :-: | :-: |
-| Auth 3 ролей                        | ✅  |     |     |
-| SingleChoice, MultiChoice           | ✅  |     |     |
-| TextInput, FormFill                 | ✅  |     |     |
-| BranchingScenario (базовый, 2 пути) | ✅  |     |     |
-| Плеер кейсов + FeedbackPanel        | ✅  |     |     |
-| Экраны студента (все 6)             | ✅  |     |     |
-| Ordering, Matching, Calculation     |     | ✅  |     |
-| Timeline, TableInput                |     | ✅  |     |
-| ImageAnnotation, DocumentEditor     |     | ✅  |     |
-| Визуальный ScenarioBuilder          |     | ✅  |     |
-| Аналитика (heatmap, charts)         |     | ✅  |     |
-| Экспорт PDF/Excel                   |     | ✅  |     |
-| Экраны Admin (все 5)                |     | ✅  |     |
-| Тёмная тема                         |     |     | ✅  |
-| Импорт/экспорт кейсов JSON          |     |     | ✅  |
-| Bulk-импорт студентов CSV           |     |     | ✅  |
-| DPI/масштаб HiDPI                   |     |     | ✅  |
+| Фича                                       | MVP | V2 | V3 |
+| ---------------------------------------------- | :-: | :-: | :-: |
+| Auth 3 ролей                              | ✅ |    |    |
+| SingleChoice, MultiChoice                      | ✅ |    |    |
+| TextInput, FormFill                            | ✅ |    |    |
+| BranchingScenario (базовый, 2 пути) | ✅ |    |    |
+| Плеер кейсов + FeedbackPanel        | ✅ |    |    |
+| Экраны студента (все 6)       | ✅ |    |    |
+| Ordering, Matching, Calculation                |    | ✅ |    |
+| Timeline, TableInput                           |    | ✅ |    |
+| ImageAnnotation, DocumentEditor                |    | ✅ |    |
+| Визуальный ScenarioBuilder           |    | ✅ |    |
+| Аналитика (heatmap, charts)           |    | ✅ |    |
+| Экспорт PDF/Excel                       |    | ✅ |    |
+| Экраны Admin (все 5)                  |    | ✅ |    |
+| Тёмная тема                          |    |    | ✅ |
+| Импорт/экспорт кейсов JSON  |    |    | ✅ |
+| Bulk-импорт студентов CSV       |    |    | ✅ |
+| DPI/масштаб HiDPI                       |    |    | ✅ |
 
 ---
 
@@ -2130,16 +2130,16 @@ Box-shadow:  inset 0 1px 0 rgba(255,255,255,0.14) + 0 8px 40px rgba(0,40,120,0.7
 
 **Три узла графа внутри иконки (в пространстве 256×256):**
 
-| Элемент                | Позиция                       | Форма            | Заливка                        | Обводка                      |
-| ---------------------- | ----------------------------- | ---------------- | ------------------------------ | ---------------------------- |
-| START-узел             | cx=128 cy=58                  | Круг r=20        | radialGradient #0b3572→#001e50 | rgba(255,255,255,0.90) 2.5px |
-| ЭКГ-пульс внутри START | y=58                          | Polyline 9 точек | —                              | #5bbfff 2.2px                |
-| DECISION-узел          | cx=128 cy=129                 | Ромб ±22px       | radialGradient #0b3572→#001e50 | rgba(255,255,255,0.80) 2.5px |
-| «?» в ромбе            | 128,135                       | Text 20px bold   | rgba(255,255,255,0.85)         | —                            |
-| SUCCESS-узел           | cx=190 cy=196                 | Круг r=17        | radialGradient #0d4a28→#071f10 | rgba(80,230,110,0.85) 2.5px  |
-| Галочка ✓              | 181→188→200 / 196→203→188     | Polyline         | —                              | #4ee87a 3px                  |
-| FAIL-узел              | cx=66 cy=196                  | Круг r=13        | #081628                        | rgba(255,255,255,0.22) 2px   |
-| Крест ✗                | 60,190→72,202 / 72,190→60,202 | 2 линии          | —                              | rgba(255,255,255,0.28) 2.5px |
+| Элемент                       | Позиция                  | Форма            | Заливка                  | Обводка               |
+| ------------------------------------ | ------------------------------- | --------------------- | ------------------------------- | ---------------------------- |
+| START-узел                       | cx=128 cy=58                    | Круг r=20         | radialGradient #0b3572→#001e50 | rgba(255,255,255,0.90) 2.5px |
+| ЭКГ-пульс внутри START | y=58                            | Polyline 9 точек | —                              | #5bbfff 2.2px                |
+| DECISION-узел                    | cx=128 cy=129                   | Ромб ±22px       | radialGradient #0b3572→#001e50 | rgba(255,255,255,0.80) 2.5px |
+| «?» в ромбе                  | 128,135                         | Text 20px bold        | rgba(255,255,255,0.85)          | —                           |
+| SUCCESS-узел                     | cx=190 cy=196                   | Круг r=17         | radialGradient #0d4a28→#071f10 | rgba(80,230,110,0.85) 2.5px  |
+| Галочка ✓                    | 181→188→200 / 196→203→188   | Polyline              | —                              | #4ee87a 3px                  |
+| FAIL-узел                        | cx=66 cy=196                    | Круг r=13         | #081628                         | rgba(255,255,255,0.22) 2px   |
+| Крест ✗                        | 60,190→72,202 / 72,190→60,202 | 2 линии          | —                              | rgba(255,255,255,0.28) 2.5px |
 
 **Соединительные линии:**
 
@@ -2522,8 +2522,8 @@ def main():
 
 ## 16. ИНСТРУКЦИЯ ДЛЯ AI-АГЕНТА: ИКОНКА И SPLASH-ЭКРАН
 
-> **Для:** Claude Code / agentic-режим  
-> **Цель:** полная интеграция иконки и загрузочного экрана в приложение  
+> **Для:** Claude Code / agentic-режим
+> **Цель:** полная интеграция иконки и загрузочного экрана в приложение
 > **Рабочая директория:** корень проекта `educase/`
 
 ---
@@ -3141,14 +3141,14 @@ EOF
 
 ### Известные ограничения Qt vs HTML
 
-| Эффект в HTML                      | Аналог в Qt                                                             | Точность |
-| ---------------------------------- | ----------------------------------------------------------------------- | -------- |
-| SVG `feGaussianBlur` glow на узлах | `QGraphicsDropShadowEffect` или рисовать в `paintEvent`                 | ~85%     |
-| CSS hex-texture `::before`         | `QPixmap` + тайлинг в `paintEvent`                                      | 100%     |
-| CSS `letter-spacing`               | `QFont.setLetterSpacing()`                                              | 100%     |
-| CSS `translateY` на буквах         | `_LetterLabel.y_offset` property + `QPainter`                           | 100%     |
-| CSS `radial-gradient` halo         | `QRadialGradient` в `paintEvent`                                        | 95%      |
-| Прогресс-бар glow                  | `QSS box-shadow` не поддерживается → рисовать поверх через `paintEvent` | 70%      |
+| Эффект в HTML                        | Аналог в Qt                                                                                              | Точность |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------- |
+| SVG `feGaussianBlur` glow на узлах | `QGraphicsDropShadowEffect` или рисовать в `paintEvent`                                         | ~85%             |
+| CSS hex-texture `::before`                | `QPixmap` + тайлинг в `paintEvent`                                                                  | 100%             |
+| CSS `letter-spacing`                      | `QFont.setLetterSpacing()`                                                                                    | 100%             |
+| CSS `translateY` на буквах        | `_LetterLabel.y_offset` property + `QPainter`                                                               | 100%             |
+| CSS `radial-gradient` halo                | `QRadialGradient` в `paintEvent`                                                                           | 95%              |
+| Прогресс-бар glow                | `QSS box-shadow` не поддерживается → рисовать поверх через `paintEvent` | 70%              |
 
 > **Про glow на прогресс-баре:** если нужен точный эффект — создать `_GlowProgressBar(QWidget)` и рисовать вручную через `QPainter + QRadialGradient` вместо стандартного `QProgressBar`.
 

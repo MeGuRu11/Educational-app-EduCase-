@@ -5,7 +5,7 @@
 """
 from PySide6.QtCore import Qt, Signal, QPoint
 from PySide6.QtGui import QMouseEvent, QFont, QColor
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QApplication
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QApplication, QWidget
 
 from ui.styles.icons import get_icon
 from ui.styles.theme import COLORS
@@ -46,29 +46,12 @@ class Topbar(QFrame):
         layout.addStretch()
 
         # ── Контролы окна (min, max, close)
-        self.btn_min = QPushButton()
-        self.btn_min.setIcon(get_icon("drag_handle", COLORS["text_secondary"], 20)) # temp icon for min
-        self.btn_min.setFixedSize(32, 32)
-        self.btn_min.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_min.setStyleSheet("border: none; background: transparent;")
-        self.btn_min.clicked.connect(self.minimized.emit)
-        layout.addWidget(self.btn_min)
-
-        self.btn_max = QPushButton()
-        self.btn_max.setIcon(get_icon("module", COLORS["text_secondary"], 20)) # temp icon for max
-        self.btn_max.setFixedSize(32, 32)
-        self.btn_max.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_max.setStyleSheet("border: none; background: transparent;")
-        self.btn_max.clicked.connect(self.maximized.emit)
-        layout.addWidget(self.btn_max)
-
-        self.btn_close = QPushButton()
-        self.btn_close.setIcon(get_icon("error_circle", COLORS["text_secondary"], 20)) # temp icon for close
-        self.btn_close.setFixedSize(32, 32)
-        self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_close.setStyleSheet("border: none; background: transparent;")
-        self.btn_close.clicked.connect(self.closed.emit)
-        layout.addWidget(self.btn_close)
+        from ui.components.window_controls import WindowControls
+        self.window_controls = WindowControls(show_maximize=True)
+        self.window_controls.minimized.connect(self.minimized.emit)
+        self.window_controls.maximized.connect(self.maximized.emit)
+        self.window_controls.closed.connect(self.closed.emit)
+        layout.addWidget(self.window_controls)
 
     def set_title(self, text: str) -> None:
         self.lbl_title.setText(text)

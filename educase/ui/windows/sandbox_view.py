@@ -144,6 +144,17 @@ class SandboxView(QWidget):
                 
             btn.clicked.connect(show_dialog)
             layout.addWidget(btn)
+            
+            btn_constructor = QPushButton("Открыть Конструктор (Этап 4)")
+            btn_constructor.setStyleSheet(f"background: {COLORS['accent']}; color: white; padding: 12px; border-radius: 6px;")
+            
+            def show_constructor():
+                from ui.task_constructor.constructor_dialog import ConstructorDialog
+                dlg = ConstructorDialog(parent=self.window())
+                dlg.exec()
+                
+            btn_constructor.clicked.connect(show_constructor)
+            layout.addWidget(btn_constructor)
 
         # 6. RichText
         def build_richtext(layout):

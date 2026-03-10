@@ -79,6 +79,15 @@ class LoginWindow(QWidget):
         event.accept()
 
     def _setup_ui(self) -> None:
+        # Кнопки управления окном (абсолютное позиционирование)
+        from ui.components.window_controls import WindowControls
+        self.window_controls = WindowControls(self, show_maximize=False)
+        # Ширина: 46px * 2 кнопки = 92px
+        self.window_controls.setFixedSize(92, 32)
+        self.window_controls.move(self.W - 92, 0)
+        self.window_controls.minimized.connect(self.showMinimized)
+        self.window_controls.closed.connect(self.close)
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(40, 60, 40, 40)
         layout.setSpacing(20)
