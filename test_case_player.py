@@ -9,7 +9,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "educase"))
 
 from PySide6.QtWidgets import QApplication
-from ui.screens.student.case_player import CasePlayer
+from educase.ui.screens.student.case_player import CasePlayer
 
 def main():
     app = QApplication(sys.argv)
@@ -111,7 +111,7 @@ def main():
 
     if result:
         # Показать результат
-        from ui.screens.student.case_result import CaseResultDialog
+        from educase.ui.screens.student.case_result import CaseResultDialog
         result_data = {
             "case_name": case_data["name"],
             "score_earned": 7.5,
