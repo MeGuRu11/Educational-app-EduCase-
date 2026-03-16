@@ -1,8 +1,27 @@
 # EduCase — Интерактивная Образовательная Платформа
 
-## Полная Проектная Документация v2.0 — ПОЛНЫЙ АУДИТ
+## Полная Проектная Документация v2.1 — СЕССИОННОЕ УПРАВЛЕНИЕ
 
-> Версия 2.0 | Дата: 2026-03-04 | Статус: Расширенная и проверенная
+> Версия 2.1 | Дата: 2026-03-11 | Статус: Расширенная, проверенная + сессионное управление (§8.1)
+
+---
+
+## CHANGELOG v2.0 → v2.1 (что добавлено)
+
+| Раздел | Что добавлено |
+| --- | --- |
+| §8.1 | Сценарий «один ПК, несколько пользователей» — полная спецификация сессионного управления |
+| §8.1.1 | Жизненный цикл сессии: приложение не перезапускается, MainWindow.hide() → LoginWindow.show() |
+| §8.1.2 | `IdleGuard` — автовыход через 15 мин бездействия (QApplication.installEventFilter + QTimer) |
+| §8.1.3 | Выход во время кейса — ConfirmDialog + attempt.abandon() при ручном/авто-выходе |
+| §8.1.4 | Очистка полей LoginWindow после каждого выхода (приватность на общем ПК) |
+| §8.1.5 | Защита от двойного входа в AuthService.login() |
+| §8.1.6 | Таблица судьбы `abandoned` попыток (студент / преподаватель / повтор) |
+| §4.2 | `IdleGuard` добавлен в Container + build_container() |
+| §4.1 | Сигнал `idle_logout` добавлен в EventBus |
+| §7 | `core/idle_guard.py` добавлен в дерево проекта |
+| §10 | `idle_guard.py` добавлен в TODO-лист |
+| §16 | Блок «ГОТОВЫЕ ИСХОДНИКИ» — инструкция по использованию готовых файлов из архива |
 
 ---
 
@@ -667,6 +686,7 @@ educase/
 ├── core/
 │   ├── database.py                 # engine, Session, pragma
 │   ├── db_maintenance.py           # VACUUM, cleanup
+│   ├── idle_guard.py               # IdleGuard: автовыход по бездействию (§8.1.2)
 │   ├── exceptions.py               # Иерархия:
 │   │                                #   AppError(Exception)
 │   │                                #   ├─ AuthError (неверный пароль / заблокирован)
@@ -950,6 +970,7 @@ from PySide6.QtCore import QObject, Signal
 class EventBus(QObject):
     user_logged_in   = Signal(object)   # User
     user_logged_out  = Signal()
+    idle_logout      = Signal()          # §8.1.2: автовыход по бездействию (15 мин)
     navigate_to      = Signal(str, object)  # screen_name, kwargs (dict не Q_TYPE)
     show_toast       = Signal(str, str)  # message, level ("success"/"error"/"info"/"warning")
     case_published   = Signal(int)      # case_id
@@ -1003,6 +1024,7 @@ class Container:
     analytics_service: AnalyticsService | None = None
     export_service:   ExportService | None   = None
     backup_service:   BackupService | None   = None
+    idle_guard:       "IdleGuard | None"     = None   # §8.1.2 — автовыход по бездействию
 
 def build_container() -> Container:
     c = Container()
@@ -1033,6 +1055,11 @@ def build_container() -> Container:
     c.analytics_service = AnalyticsService(c.analytics_repo)
     c.export_service   = ExportService(c.analytics_service, c.attempt_repo)
     c.backup_service   = BackupService()
+    # §8.1.2 — Автовыход по бездействию (сценарий: один ПК, несколько пользователей)
+    from core.idle_guard import IdleGuard
+    c.idle_guard = IdleGuard()
+    # Передаём attempt_service в auth_service для abandon() при logout()
+    c.auth_service._attempt_service_ref = c.attempt_service
     return c
 ```
 
@@ -1782,6 +1809,213 @@ class BackupService:
 
 ---
 
+## 8.1 СЦЕНАРИЙ ЭКСПЛУАТАЦИИ: ОДИН ПК — НЕСКОЛЬКО ПОЛЬЗОВАТЕЛЕЙ
+
+> Приложение работает на **одном компьютере в учебном кабинете**.
+> Студенты и преподаватели работают **по очереди**, каждый под своим логином.
+> Приложение **никогда не закрывается** между сменой пользователей — только меняет
+> активного пользователя через экран входа.
+
+---
+
+### 8.1.1 Жизненный цикл сессии
+
+```
+Запуск приложения
+      │
+      ▼
+  SplashScreen → LoginWindow          ← приложение стартует ОДИН раз
+      │
+      │  успешный вход
+      ▼
+  MainWindow (current_user = User)
+      │
+      │  [Выйти] / автовыход по таймеру / выход во время кейса
+      ▼
+  logout() в AuthService:
+    1. current_user = None
+    2. Если есть активная попытка → attempt_service.abandon(attempt)
+    3. bus.user_logged_out.emit()
+      │
+      ▼
+  MainWindow скрывается (hide, НЕ close)
+  LoginWindow показывается (show + поля очищены)
+      │
+      │  следующий пользователь вводит логин
+      ▼
+  (цикл повторяется)
+```
+
+**Приложение завершается только через кнопку ✕ в TitleBar** (системное закрытие окна).
+`QApplication.quit()` вызывается только из `closeEvent` главного окна.
+
+---
+
+### 8.1.2 Автовыход по бездействию (Idle Auto-Logout)
+
+Если пользователь не совершал действий **15 минут** — автоматический выход.
+
+```python
+# core/idle_guard.py
+"""
+Отслеживает бездействие пользователя через QApplication.instance().
+При превышении IDLE_TIMEOUT_MS → bus.idle_logout.emit().
+Активен только когда current_user IS NOT None.
+"""
+from PySide6.QtCore import QObject, QTimer, QEvent
+from PySide6.QtWidgets import QApplication
+from core.event_bus import bus
+
+IDLE_TIMEOUT_MS = 15 * 60 * 1000   # 15 минут
+
+ACTIVITY_EVENTS = {
+    QEvent.MouseMove, QEvent.MouseButtonPress, QEvent.KeyPress,
+    QEvent.Wheel, QEvent.TouchBegin,
+}
+
+class IdleGuard(QObject):
+    """
+    Устанавливается как eventFilter на QApplication.
+    Сбрасывает таймер при любом пользовательском событии.
+    """
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._timer = QTimer(self)
+        self._timer.setInterval(IDLE_TIMEOUT_MS)
+        self._timer.setSingleShot(True)
+        self._timer.timeout.connect(self._on_idle)
+        self._active = False
+
+    def start(self):
+        """Вызывать после успешного входа."""
+        self._active = True
+        self._timer.start()
+        QApplication.instance().installEventFilter(self)
+
+    def stop(self):
+        """Вызывать после выхода."""
+        self._active = False
+        self._timer.stop()
+        QApplication.instance().removeEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if self._active and event.type() in ACTIVITY_EVENTS:
+            self._timer.start()   # сброс таймера
+        return False   # не перехватываем событие
+
+    def _on_idle(self):
+        if self._active:
+            bus.idle_logout.emit()   # → AuthService.logout() + toast "Выход по бездействию"
+```
+
+**Интеграция в EventBus:**
+```python
+# core/event_bus.py — добавить сигнал:
+idle_logout = Signal()   # → подписывается MainWindow → вызывает auth_service.logout()
+```
+
+**Поведение:**
+- Во время **прохождения кейса** таймер работает в обычном режиме.
+  Если студент не трогает мышь 15 мин (например, читает длинное условие) — выход,
+  попытка помечается `abandoned`. **Это намеренно** — безопасность важнее удобства.
+- Таймер **не работает** когда `current_user = None` (на экране логина).
+- Idle-guard создаётся в `build_container()`, хранится как `container.idle_guard`.
+
+---
+
+### 8.1.3 Выход во время прохождения кейса
+
+Когда пользователь нажимает **[← Выйти]** внутри `CasePlayer` или кнопку **Logout** в сайдбаре:
+
+```
+Нажатие Выйти / Logout
+      │
+      ▼
+  ConfirmDialog:
+  "Текущая попытка будет прервана и засчитана как незавершённая.
+   Выйти?"
+  [Выйти]  [Остаться]
+      │
+      │ [Выйти]
+      ▼
+  attempt_service.abandon(current_attempt)
+    → UPDATE attempts SET status='abandoned', finished_at=now() WHERE id=?
+      │
+      ▼
+  auth_service.logout()
+      │
+      ▼
+  LoginWindow (поля очищены)
+```
+
+**Нет активной попытки** → ConfirmDialog не показывается, выход немедленный.
+
+**При автовыходе по таймеру** → ConfirmDialog не показывается (пользователя нет за компьютером),
+попытка сразу помечается `abandoned`.
+
+---
+
+### 8.1.4 Очистка LoginWindow после выхода
+
+```python
+# ui/windows/login_window.py — метод вызывается при bus.user_logged_out
+def reset_for_next_user(self):
+    """Подготавливает форму для следующего пользователя."""
+    self.login_field.clear()
+    self.password_field.clear()
+    self.error_label.hide()
+    self.login_field.setFocus()
+    # ❌ НЕ восстанавливать последний логин — на общем ПК это нарушение приватности
+```
+
+---
+
+### 8.1.5 Защита от повторного входа (двойной сеанс)
+
+SQLite не допускает двух активных попыток одного пользователя (UNIQUE индекс).
+На уровне `AuthService.login()`:
+
+```python
+def login(self, username: str, password: str) -> User:
+    # ... проверка пароля ...
+    if app.current_user is not None:
+        raise AuthError("Другой пользователь уже вошёл. Сначала выйдите.")
+    app.current_user = user
+    app.idle_guard.start()
+    return user
+
+def logout(self) -> None:
+    if app.current_user is None:
+        return
+    # Прерываем активную попытку если есть
+    try:
+        attempt = self._attempt_repo.get_active(app.current_user.id)
+        if attempt:
+            self._attempt_service.abandon(attempt)
+    except Exception:
+        pass   # не блокируем выход даже при ошибке
+    app.current_user = None
+    app.idle_guard.stop()
+    bus.user_logged_out.emit()
+```
+
+---
+
+### 8.1.6 Что происходит с `abandoned` попытками
+
+| Ситуация | Статус в БД | Видно студенту | Засчитывается |
+|---|---|---|---|
+| Выход во время кейса (кнопка) | `abandoned` | Да, в «Мои результаты» как «Прервано» | Нет (балл не записывается) |
+| Автовыход по таймеру | `abandoned` | Да, «Прервано (бездействие)» | Нет |
+| Студент может начать заново | — | Кнопка «Начать заново» если `attempt_num < max_attempts` | — |
+| Преподаватель в аналитике | — | Отображается серым, не влияет на средний балл | — |
+
+> **Примечание для разработчика:** `db_maintenance.run_maintenance()` при старте приложения
+> помечает осиротевшие `in_progress` попытки (из предыдущего сеанса / крэша) как `abandoned`.
+> Это дополнение к механизму штатного выхода, а не замена ему.
+
+---
+
 ## 9. GRADER SERVICE — ЛОГИКА ОЦЕНИВАНИЯ ВСЕХ ТИПОВ
 
 ```python
@@ -1877,6 +2111,7 @@ class GradeResult:
 - [X] repositories/user_repo.py
 - [X] repositories/group_repo.py
 - [X] services/auth_service.py (login, logout, lockout, permission check)
+- [ ] core/idle_guard.py (IdleGuard: eventFilter на QApplication, 15-мин таймер, bus.idle_logout — §8.1.2)
 - [X] services/user_service.py (create, update, change_password)
 - [X] Seed: роли + 3 тестовых пользователя + 3 дисциплины
 - [X] ui/components/toast.py (ToastManager, 4 типа, анимации)
@@ -2525,6 +2760,60 @@ def main():
 > **Для:** Claude Code / agentic-режим
 > **Цель:** полная интеграция иконки и загрузочного экрана в приложение
 > **Рабочая директория:** корень проекта `educase/`
+
+---
+
+### ГОТОВЫЕ ИСХОДНИКИ — скопировать в проект
+
+> Все файлы ниже **уже написаны и готовы к копированию** из архива `educase_sources.zip`.
+> Агент должен использовать именно их, **не генерировать заново**.
+
+```
+educase/                          ← корень проекта
+├── assets/
+│   └── icon_master.svg           ✅ ГОТОВ — мастер SVG иконки (256×256)
+├── tools/
+│   └── make_ico.py               ✅ ГОТОВ — генерирует assets/icon.ico из SVG
+├── ui/
+│   └── windows/
+│       └── splash_window.py      ✅ ГОТОВ — SplashScreen + _LetterLabel (§16 полная версия)
+└── main.py                       ✅ ГОТОВ — точка входа с правильной последовательностью запуска
+```
+
+#### Что в каждом файле
+
+| Файл | Содержимое |
+|------|-----------|
+| `assets/icon_master.svg` | SVG 256×256: START-узел с ЭКГ, DECISION-ромб с «?», SUCCESS-круг с галочкой, FAIL-круг с крестом, hex-текстура фона, glow-фильтры |
+| `tools/make_ico.py` | Конвертер SVG→ICO: cairosvg рендерит 5 размеров (256/128/64/32/16px), Pillow собирает .ico |
+| `ui/windows/splash_window.py` | `SplashScreen` (540×330, все 7 фаз), `_LetterLabel` (per-letter анимация), все тайминги из HTML-превью |
+| `main.py` | `main()`: QApp → _init_dirs → SplashScreen.start() → run_migrations → build_container → LoginWindow → гарантия 2500ms |
+
+#### Порядок действий агента
+
+```bash
+# 1. Убедиться что файлы распакованы в правильные места
+ls assets/icon_master.svg         # должен существовать
+ls ui/windows/splash_window.py    # должен существовать
+
+# 2. Сгенерировать icon.ico (однократно)
+pip install cairosvg Pillow       # только если не установлены (dev-зависимости)
+python tools/make_ico.py
+# Ожидаемый вывод: ✅ assets/icon.ico создан (N KB)
+
+# 3. Smoke-test splash
+python - << 'EOF'
+import sys
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore    import QTimer
+from ui.windows.splash_window import SplashScreen
+app = QApplication(sys.argv)
+splash = SplashScreen()
+splash.start()
+QTimer.singleShot(4000, app.quit)
+sys.exit(app.exec())
+EOF
+```
 
 ---
 

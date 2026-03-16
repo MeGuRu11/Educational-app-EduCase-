@@ -1,9 +1,10 @@
 # ui/components/progress_bar.py
+from PySide6.QtCore import Property, QEasingCurve, QPropertyAnimation
+from PySide6.QtGui import QColor, QPainter, QPainterPath
 from PySide6.QtWidgets import QWidget
-from PySide6.QtGui import QPainter, QPainterPath, QColor
-from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, Property
 
-from ui.styles.theme import COLORS, ANIM
+from ui.styles.theme import ANIM, COLORS
+
 
 class ProgressBar(QWidget):
     """
@@ -14,7 +15,7 @@ class ProgressBar(QWidget):
         self._value = 0.0 # 0.0 to 1.0
         self._animated_value = 0.0
         self.setFixedHeight(8)
-        
+
         self.anim = QPropertyAnimation(self, b"animated_value", self)
         self.anim.setDuration(ANIM["medium"])
         self.anim.setEasingCurve(QEasingCurve.Type.OutCubic)
@@ -32,7 +33,7 @@ class ProgressBar(QWidget):
         # clamp between 0 and 1
         value = max(0.0, min(1.0, value))
         self._value = value
-        
+
         if animated:
             self.anim.stop()
             self.anim.setStartValue(self._animated_value)
@@ -44,25 +45,25 @@ class ProgressBar(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
+
         # Background
         bg_path = QPainterPath()
         bg_path.addRoundedRect(self.rect(), self.height()/2, self.height()/2)
         p.fillPath(bg_path, QColor(0, 0, 0, 20)) # stroke_card
-        
+
         # Fill
         if self._animated_value > 0:
             fill_width = self.width() * self._animated_value
             fill_rect = self.rect()
             fill_rect.setWidth(fill_width)
-            
+
             fill_path = QPainterPath()
             fill_path.addRoundedRect(fill_rect, self.height()/2, self.height()/2)
-            
+
             # Change color based on completion
             if self._animated_value >= 1.0:
                 color = QColor(COLORS["success"])
             else:
                 color = QColor(COLORS["accent"])
-                
+
             p.fillPath(fill_path, color)

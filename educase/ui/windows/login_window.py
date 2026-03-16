@@ -3,18 +3,22 @@
 Окно авторизации. FramelessWindowHint, центрирование.
 Обработка ввода, валидация, интеграция с AuthService.
 """
-from PySide6.QtCore import Qt, QTimer, QPoint, QEasingCurve, QPropertyAnimation, Signal
-from PySide6.QtGui import QMouseEvent, QPainter, QColor, QFont
+from PySide6.QtCore import QPoint, Qt, QTimer, Signal
+from PySide6.QtGui import QColor, QFont, QMouseEvent, QPainter
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
-    QPushButton, QApplication
+    QApplication,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
 )
 
 from core.di_container import Container
 from core.exceptions import AuthError
-from ui.styles.animations import fade_in, fade_out
 from ui.styles.icons import get_icon
-from ui.styles.theme import ANIM, COLORS, RADIUS
+from ui.styles.theme import COLORS, RADIUS
 
 
 class LoginWindow(QWidget):
@@ -30,7 +34,7 @@ class LoginWindow(QWidget):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Window)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setFixedSize(self.W, self.H)
-        
+
         # Для перетаскивания окна
         self._dragging = False
         self._drag_start_pos = QPoint()
@@ -93,10 +97,11 @@ class LoginWindow(QWidget):
         layout.setSpacing(20)
 
         # === Логотип и заголовки ===
-        logo_label = QLabel(self)
-        logo_label.setPixmap(get_icon("book", COLORS["accent"], 64).pixmap(64, 64))
-        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(logo_label)
+        from PySide6.QtSvgWidgets import QSvgWidget
+        logo_label = QSvgWidget("assets/icon_master.svg", self)
+        logo_label.setFixedSize(64, 64)
+        
+        layout.addWidget(logo_label, 0, Qt.AlignmentFlag.AlignCenter)
 
         title = QLabel("EduCase")
         title_font = QFont("Segoe UI Variable", 28, QFont.Weight.Bold)
@@ -123,7 +128,7 @@ class LoginWindow(QWidget):
 
         pwd_layout = QHBoxLayout()
         pwd_layout.setSpacing(8)
-        
+
         self.inp_pwd: QLineEdit = QLineEdit()
         self.inp_pwd.setPlaceholderText("Пароль")
         self.inp_pwd.setEchoMode(QLineEdit.EchoMode.Password)
@@ -147,7 +152,7 @@ class LoginWindow(QWidget):
         self.btn_login.setFixedHeight(44)
         self.btn_login.clicked.connect(self._on_login_clicked)
         # Style defined in global QSS usually, but we ensure accent class if needed
-        self.btn_login.setProperty("class", "primary") 
+        self.btn_login.setProperty("class", "primary")
         layout.addWidget(self.btn_login)
 
         # === Ошибка ===
@@ -155,22 +160,22 @@ class LoginWindow(QWidget):
         self.lbl_error.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_error.setStyleSheet(f"color: {COLORS['error']}; font-size: 13px;")
         self.lbl_error.hide()  # Hidden by default
-        
+
         layout.addWidget(self.lbl_error)
 
         layout.addStretch()
 
         # === Footer ===
         footer_layout = QHBoxLayout()
-        
+
         contact_admin = QLabel("Забыли пароль? Обратитесь к администратору")
         contact_admin.setStyleSheet(f"color: {COLORS['text_secondary']}; font-size: 11px;")
         footer_layout.addWidget(contact_admin, alignment=Qt.AlignmentFlag.AlignLeft)
-        
+
         version = QLabel("v1.0.0")
         version.setStyleSheet(f"color: {COLORS['text_disabled']}; font-size: 11px;")
         footer_layout.addWidget(version, alignment=Qt.AlignmentFlag.AlignRight)
-        
+
         layout.addLayout(footer_layout)
 
     def _toggle_pwd_visibility(self) -> None:
@@ -205,21 +210,21 @@ class LoginWindow(QWidget):
         QApplication.processEvents() # Force UI update
 
         try:
-            user = self.auth_service.login(username, password)
+            self.auth_service.login(username, password)
             self.login_successful.emit()
-            
+
         except AuthError as e:
             self.show_error(str(e))
             self.btn_login.setEnabled(True)
             self.btn_login.setText("ВОЙТИ")
-            
+
             if e.code == "LOCKED_OUT" or e.code == "ACCOUNT_LOCKED":
                 # Извлекаем секунды из текста, либо ставим дефолт
                 import re
                 match = re.search(r"через (\d+) сек", str(e))
                 secs = int(match.group(1)) if match else 300
                 self._start_lockdown(secs)
-                
+
         except Exception as e:
             self.show_error("Внутренняя ошибка сервера")
             print(f"Login error: {e}")
@@ -250,3 +255,14 @@ class LoginWindow(QWidget):
         m = self.lock_seconds_left // 60
         s = self.lock_seconds_left % 60
         self.btn_login.setText(f"Заблокировано ({m}:{s:02d})")
+
+    def _clear_errors(self) -> None:
+        self.lbl_error.setText("")
+        self.lbl_error.hide()
+        # Сброс стилей, если они менялись (сейчас они базовые)
+
+    def clear_fields(self) -> None:
+        """Очищает поля ввода при выходе из системы."""
+        self.inp_login.clear()
+        self.inp_pwd.clear()
+        self._clear_errors()

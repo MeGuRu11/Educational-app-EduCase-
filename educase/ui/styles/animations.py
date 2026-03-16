@@ -32,7 +32,7 @@ def fade_in(widget: QWidget, duration: int = ANIM["normal"]) -> QPropertyAnimati
     anim.setDuration(duration)
     anim.setStartValue(0.0)
     anim.setEndValue(1.0)
-    anim.setEasingCurve(QEasingCurve.OutCubic)
+    anim.setEasingCurve(QEasingCurve.Type.OutCubic)
     anim.start()
     widget.setProperty("_fade_anim", anim)  # prevent GC
     return anim
@@ -84,7 +84,7 @@ def slide_up(
     anim_op.setDuration(duration)
     anim_op.setStartValue(0.0)
     anim_op.setEndValue(1.0)
-    anim_op.setEasingCurve(QEasingCurve.OutCubic)
+    anim_op.setEasingCurve(QEasingCurve.Type.OutCubic)
     group.addAnimation(anim_op)
 
     group.start()
@@ -109,14 +109,14 @@ def slide_from_right(
     anim_pos.setDuration(duration)
     anim_pos.setStartValue(QPoint(start_pos.x() + 30, start_pos.y()))
     anim_pos.setEndValue(start_pos)
-    anim_pos.setEasingCurve(QEasingCurve.OutCubic)
+    anim_pos.setEasingCurve(QEasingCurve.Type.OutCubic)
     group.addAnimation(anim_pos)
 
     anim_op = QPropertyAnimation(eff, b"opacity", widget)
     anim_op.setDuration(duration)
     anim_op.setStartValue(0.0)
     anim_op.setEndValue(1.0)
-    anim_op.setEasingCurve(QEasingCurve.OutCubic)
+    anim_op.setEasingCurve(QEasingCurve.Type.OutCubic)
     group.addAnimation(anim_op)
 
     group.start()
@@ -133,14 +133,14 @@ def sidebar_expand(
     anim.setDuration(duration)
     anim.setStartValue(from_w)
     anim.setEndValue(to_w)
-    anim.setEasingCurve(QEasingCurve.OutCubic)
+    anim.setEasingCurve(QEasingCurve.Type.OutCubic)
     anim.start()
 
     anim2 = QPropertyAnimation(sidebar, b"maximumWidth", sidebar)
     anim2.setDuration(duration)
     anim2.setStartValue(from_w)
     anim2.setEndValue(to_w)
-    anim2.setEasingCurve(QEasingCurve.OutCubic)
+    anim2.setEasingCurve(QEasingCurve.Type.OutCubic)
     anim2.start()
 
     sidebar.setProperty("_expand_anim", anim)
@@ -217,7 +217,7 @@ def progress_ring_fill(
     anim.setDuration(duration)
     anim.setStartValue(from_val)
     anim.setEndValue(to_val)
-    anim.setEasingCurve(QEasingCurve.OutCubic)
+    anim.setEasingCurve(QEasingCurve.Type.OutCubic)
     anim.start()
     ring_widget.setProperty("_ring_anim", anim)
     return anim
@@ -274,7 +274,7 @@ def slide_in_right(
     anim.setDuration(duration)
     anim.setStartValue(QPoint(start_x, panel.y()))
     anim.setEndValue(QPoint(end_x, panel.y()))
-    anim.setEasingCurve(QEasingCurve.OutCubic)
+    anim.setEasingCurve(QEasingCurve.Type.OutCubic)
     anim.start()
     panel.setProperty("_slide_in_anim", anim)
     return anim

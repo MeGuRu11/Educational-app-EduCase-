@@ -24,6 +24,10 @@ class EventBus(QObject):
     attempt_finished = Signal(int)  # attempt_id
     user_updated = Signal(int)  # user_id
 
+    # Session Management
+    idle_warning = Signal(int) # seconds_left
+    idle_timeout = Signal()
+
     _instance = None
 
     @classmethod
@@ -32,5 +36,18 @@ class EventBus(QObject):
             cls._instance = cls()
         return cls._instance
 
+    def subscribe(self, signal_name: str, slot: object):
+        """Подписывает слот на сигнал по его строковому имени."""
+        if hasattr(self, signal_name):
+            getattr(self, signal_name).connect(slot)
+        else:
+            print(f"[EventBus] Warning: Signal '{signal_name}' not found.")
+
+    def trigger(self, signal_name: str, *args, **kwargs):
+        """Вызывает сигнал по его строковому имени с переданными аргументами."""
+        if hasattr(self, signal_name):
+            getattr(self, signal_name).emit(*args, **kwargs)
+        else:
+            print(f"[EventBus] Warning: Signal '{signal_name}' not found.")
 
 bus = EventBus.instance()

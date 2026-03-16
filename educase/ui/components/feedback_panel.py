@@ -4,15 +4,9 @@
 Три состояния: correct (зелёный), incorrect (красный), partial (оранжевый).
 Премиальный дизайн с плавной анимацией.
 """
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QGraphicsOpacityEffect
-)
-from PySide6.QtCore import (
-    Qt, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QSize
-)
+from PySide6.QtCore import QEasingCurve, QParallelAnimationGroup, QPropertyAnimation, Qt
 from PySide6.QtGui import QFont
-
-from ui.styles.theme import COLORS
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 
 class FeedbackPanel(QWidget):

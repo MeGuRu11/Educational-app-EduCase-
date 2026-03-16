@@ -3,9 +3,9 @@
 Кнопки управления окном в стиле Windows 10/11.
 Используем простые Unicode-символы, которые гарантированно отображаются.
 """
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QPushButton
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QHBoxLayout, QPushButton, QWidget
 
 from ui.styles.theme import COLORS
 

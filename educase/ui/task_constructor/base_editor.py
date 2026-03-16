@@ -18,29 +18,29 @@ class AbstractTaskEditor(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(16, 16, 16, 16)
-        self.layout.setSpacing(16)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(16, 16, 16, 16)
+        self.main_layout.setSpacing(16)
         # Убираем background: bg_layer отсюда, зададим его в контейнере, если нужно
         
         # 1. Заголовок
         header_lbl = QLabel("Условие задания:")
         header_lbl.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLORS['text_primary']};")
-        self.layout.addWidget(header_lbl)
+        self.main_layout.addWidget(header_lbl)
         
         # 2. Поле условия (RichTextEditor)
         self.body_editor = RichTextEditor()
         self.body_editor.text_changed.connect(self.data_changed.emit)
-        self.layout.addWidget(self.body_editor, stretch=1)
+        self.main_layout.addWidget(self.body_editor, stretch=1)
         
         # 3. Специфичный UI для конкретного типа (вставляется наследником)
         self.specific_layout = QVBoxLayout()
         self.specific_layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.addLayout(self.specific_layout, stretch=2)
+        self.main_layout.addLayout(self.specific_layout, stretch=2)
         self._setup_specific_ui(self.specific_layout)
         
         # 4. Общие настройки (Баллы, Подсказки)
-        self.layout.addWidget(self._create_settings_group())
+        self.main_layout.addWidget(self._create_settings_group())
 
     def _create_settings_group(self) -> QGroupBox:
         group = QGroupBox("Настройки оценивания и обратной связи")

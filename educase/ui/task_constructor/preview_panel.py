@@ -15,9 +15,9 @@ class PreviewPanel(QWidget):
     """
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(16, 16, 16, 16)
-        self.layout.setSpacing(16)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(16, 16, 16, 16)
+        self.main_layout.setSpacing(16)
         
         # Общий фон панели
         self.setStyleSheet(f"background: {COLORS['bg_layer']}; border-radius: 8px;")
@@ -25,7 +25,7 @@ class PreviewPanel(QWidget):
         # Заголовок
         header = QLabel("Предпросмотр")
         header.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLORS['text_primary']};")
-        self.layout.addWidget(header)
+        self.main_layout.addWidget(header)
         
         # Враппер под превью
         self.preview_container = QFrame()
@@ -38,7 +38,7 @@ class PreviewPanel(QWidget):
         """)
         self.pc_layout = QVBoxLayout(self.preview_container)
         self.pc_layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.addWidget(self.preview_container, stretch=1)
+        self.main_layout.addWidget(self.preview_container, stretch=1)
         
         # Заглушка (EmptyState)
         self.empty_state = EmptyState(

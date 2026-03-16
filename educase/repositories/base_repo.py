@@ -2,7 +2,7 @@
 """
 Generic репозиторий для базовых CRUD-операций с моделями SQLAlchemy.
 """
-from typing import Generic, List, Optional, Type, TypeVar
+from typing import Generic, TypeVar
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
@@ -13,15 +13,15 @@ ModelType = TypeVar("ModelType", bound=Base)
 
 
 class BaseRepository(Generic[ModelType]):
-    def __init__(self, model: Type[ModelType], session: Session):
+    def __init__(self, model: type[ModelType], session: Session):
         self.model = model
         self.session = session
 
-    def get(self, id: int) -> Optional[ModelType]:
-        stmt = select(self.model).where(self.model.id == id)
+    def get(self, id: int) -> ModelType | None:
+        stmt = select(self.model).where(getattr(self.model, "id") == id)
         return self.session.execute(stmt).scalar_one_or_none()
 
-    def get_all(self, skip: int = 0, limit: int = 100) -> List[ModelType]:
+    def get_all(self, skip: int = 0, limit: int = 100) -> list[ModelType]:
         stmt = select(self.model).offset(skip).limit(limit)
         return list(self.session.execute(stmt).scalars().all())
 
@@ -46,7 +46,9 @@ class BaseRepository(Generic[ModelType]):
         return obj
 
     def delete(self, id: int) -> bool:
-        stmt = delete(self.model).where(self.model.id == id)
+        from typing import Any, cast
+        model_any = cast(Any, self.model)
+        stmt = delete(self.model).where(model_any.id == id)
         result = self.session.execute(stmt)
         self.session.commit()
         return result.rowcount > 0

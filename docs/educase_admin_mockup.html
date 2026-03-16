@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCase — Admin Panel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --accent:       #0078D4;
+  --accent-h:     #006CBD;
+  --accent-light: #4DA3E8;
+  --accent-dark:  #005A9E;
+  --success:      #107C10;
+  --success-bg:   #DFF6DD;
+  --warning:      #9D5D00;
+  --warning-bg:   #FFF4CE;
+  --error:        #C42B1C;
+  --error-bg:     #FDE7E9;
+  --bg:           #F0F2F5;
+  --card:         #FFFFFF;
+  --sidebar:      #0D1B2E;
+  --sidebar-w:    240px;
+  --t1:           #1A1A2E;
+  --t2:           #5A6478;
+  --t3:           #9BA3B4;
+  --border:       rgba(0,0,0,0.07);
+  --shadow-sm:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:    0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg:    0 12px 40px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.06);
+  --r:            12px;
+  --font:         'Nunito', sans-serif;
+  --mono:         'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: var(--font); background: var(--bg); color: var(--t1); }
+
+/* ── APP SHELL ── */
+.app { display: flex; height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w); background: var(--sidebar); flex-shrink: 0;
+  display: flex; flex-direction: column; position: relative; overflow: hidden;
+}
+.sidebar::before {
+  content: ''; position: absolute; top: 0; right: 0; width: 1px; height: 100%;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 70%, transparent);
+}
+.sidebar-top { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.logo-icon {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  background: linear-gradient(135deg, #0050a0, #0078D4);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,120,212,.4);
+}
+.logo-icon svg { width: 18px; height: 18px; }
+.logo-name { font-size: 16px; font-weight: 800; color: #fff; }
+.logo-name span { color: var(--accent-light); }
+.logo-admin-badge {
+  margin-left: 4px; font-size: 9px; font-weight: 800; letter-spacing: 1px;
+  background: rgba(196,43,28,.25); color: #ff8080; padding: 2px 6px; border-radius: 4px;
+  text-transform: uppercase;
+}
+.user-card {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: rgba(255,255,255,0.05); border-radius: 10px;
+}
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff;
+  background: linear-gradient(135deg, #C42B1C, #e85050);
+}
+.user-name { font-size: 13px; font-weight: 700; color: #fff; }
+.user-role { font-size: 11px; color: rgba(255,255,255,.35); font-weight: 500; }
+
+.sidebar-nav { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+  color: rgba(255,255,255,.2); padding: 10px 8px 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  border-radius: 8px; cursor: pointer; transition: all .18s;
+  color: rgba(255,255,255,.45); font-size: 13px; font-weight: 600; position: relative;
+  border: none; background: none; width: 100%; text-align: left; font-family: var(--font);
+}
+.nav-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.75); }
+.nav-item.active { background: rgba(196,43,28,.15); color: #fff; }
+.nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 18px; background: #ff8080; border-radius: 0 3px 3px 0;
+}
+.nav-item svg { width: 16px; height: 16px; opacity: .7; flex-shrink: 0; }
+.nav-item.active svg { opacity: 1; }
+.nav-badge {
+  margin-left: auto; background: var(--error); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 100px;
+}
+.nav-badge.warn { background: #F59E0B; }
+.sidebar-bottom { padding: 12px; border-top: 1px solid rgba(255,255,255,0.06); }
+.logout-btn {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  border-radius: 8px; cursor: pointer; color: rgba(255,255,255,.3);
+  font-size: 13px; font-weight: 600; transition: all .18s;
+  width: 100%; background: none; border: none; font-family: var(--font);
+}
+.logout-btn:hover { background: rgba(220,50,40,.15); color: #fc8080; }
+
+/* ── MAIN ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar {
+  height: 60px; background: var(--card); display: flex; align-items: center;
+  padding: 0 28px; gap: 16px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+.topbar-title { font-size: 17px; font-weight: 800; color: var(--t1); }
+.topbar-spacer { flex: 1; }
+.topbar-date {
+  font-size: 12px; color: var(--t3); font-weight: 600;
+  background: var(--bg); padding: 6px 14px; border-radius: 100px;
+}
+.content { flex: 1; overflow-y: auto; padding: 24px 28px 40px; }
+.content::-webkit-scrollbar { width: 6px; }
+.content::-webkit-scrollbar-thumb { background: rgba(0,0,0,.12); border-radius: 3px; }
+
+/* ── VIEWS ── */
+.view { display: none; animation: fadeSlide .28s ease; }
+.view.active { display: block; }
+@keyframes fadeSlide { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── STAT CARDS ── */
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-row-5 { grid-template-columns: repeat(5, 1fr); }
+.stat-card {
+  background: var(--card); border-radius: var(--r); padding: 20px 22px;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 14px; position: relative; overflow: hidden;
+  transition: transform .18s, box-shadow .18s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.stat-card::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--card-accent, var(--accent)); border-radius: var(--r) var(--r) 0 0;
+}
+.stat-icon {
+  width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--icon-bg, #EFF6FC);
+}
+.stat-icon svg { width: 22px; height: 22px; }
+.stat-body { flex: 1; }
+.stat-label { font-size: 12px; font-weight: 600; color: var(--t2); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+.stat-value { font-size: 28px; font-weight: 800; color: var(--t1); line-height: 1; letter-spacing: -1px; }
+.stat-delta { font-size: 12px; font-weight: 700; margin-top: 6px; display: inline-flex; align-items: center; gap: 3px; }
+.stat-delta.up { color: var(--success); }
+.stat-delta.down { color: var(--error); }
+.stat-delta.neutral { color: var(--t3); }
+
+/* ── CARD ── */
+.card {
+  background: var(--card); border-radius: var(--r); padding: 22px 24px;
+  box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 20px;
+}
+.card-title {
+  font-size: 14px; font-weight: 800; color: var(--t1); margin-bottom: 18px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-link { font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer; text-decoration: none; }
+.card-link:hover { text-decoration: underline; }
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 13px; font-weight: 800; color: var(--t1);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── SYS INFO CARD ── */
+.sysinfo-card {
+  background: linear-gradient(135deg, #0D1B2E 0%, #0a2040 100%);
+  border-radius: var(--r); padding: 22px 26px; margin-bottom: 24px;
+  border: 1px solid rgba(255,255,255,0.06); box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; gap: 0;
+}
+.sysinfo-item {
+  flex: 1; display: flex; flex-direction: column; gap: 5px;
+  padding: 0 24px; border-right: 1px solid rgba(255,255,255,0.08);
+}
+.sysinfo-item:first-child { padding-left: 0; }
+.sysinfo-item:last-child { border-right: none; }
+.sysinfo-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: .8px; }
+.sysinfo-value { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.5px; line-height: 1; }
+.sysinfo-sub { font-size: 11px; color: rgba(255,255,255,.35); margin-top: 2px; }
+.sysinfo-ok { display: inline-flex; align-items: center; gap: 5px; background: rgba(16,124,16,.2); color: #4ee87a; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 100px; margin-top: 4px; }
+.sysinfo-warn { background: rgba(196,43,28,.2); color: #ff8080; }
+
+/* ── TABLES ── */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  font-size: 11px; font-weight: 700; color: var(--t3); text-transform: uppercase;
+  letter-spacing: .7px; padding: 0 14px 12px; text-align: left; border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 11px 14px; font-size: 13px; border-bottom: 1px solid rgba(0,0,0,.03); vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(0,0,0,.015); cursor: pointer; }
+
+/* ── ROLE BADGE ── */
+.role-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 100px;
+}
+.role-admin   { background: rgba(196,43,28,.12); color: var(--error); }
+.role-teacher { background: #EFF6FC; color: var(--accent-dark); }
+.role-student { background: #DFF6DD; color: #0B5E0B; }
+
+/* ── STATUS BADGE ── */
+.status-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 100px;
+}
+.status-active  { background: #DFF6DD; color: #0B5E0B; }
+.status-locked  { background: #FDE7E9; color: var(--error); }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* ── LOG LEVEL BADGE ── */
+.log-badge {
+  display: inline-flex; padding: 2px 8px; border-radius: 4px;
+  font-size: 10px; font-weight: 800; letter-spacing: .5px; font-family: var(--mono);
+}
+.log-info    { background: #EFF6FC; color: var(--accent-dark); }
+.log-warning { background: #FFF4CE; color: #7A4800; }
+.log-error   { background: #FDE7E9; color: var(--error); }
+.log-debug   { background: #f0f0f0; color: #666; }
+
+/* ── ACTION BUTTONS ── */
+.action-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+  border-radius: 7px; font-size: 12px; font-weight: 700; border: none; cursor: pointer;
+  font-family: var(--font); transition: background .15s;
+}
+.action-btn.primary { background: var(--accent); color: #fff; }
+.action-btn.primary:hover { background: var(--accent-h); }
+.action-btn.ghost { background: var(--bg); color: var(--t1); border: 1px solid var(--border); }
+.action-btn.ghost:hover { background: #e4e7eb; }
+.action-btn.danger { background: var(--error-bg); color: var(--error); }
+.action-btn.danger:hover { background: #fcd0d0; }
+.action-btn.sm { padding: 4px 10px; font-size: 11px; }
+
+/* ── ICON BTN ── */
+.icon-btn {
+  width: 30px; height: 30px; border-radius: 7px; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg); color: var(--t2); transition: background .15s;
+}
+.icon-btn:hover { background: #e4e7eb; }
+.icon-btn.danger:hover { background: var(--error-bg); color: var(--error); }
+.icon-btn svg { width: 15px; height: 15px; }
+
+/* ── FILTER ROW ── */
+.filter-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.filter-select {
+  padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--card); font-family: var(--font); font-size: 13px;
+  color: var(--t1); font-weight: 600; cursor: pointer;
+}
+.search-input {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 7px 14px; font-size: 13px; color: var(--t2);
+}
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 2px; background: var(--bg); border-radius: 10px; padding: 4px; margin-bottom: 20px; }
+.tab {
+  flex: 1; padding: 8px 16px; border-radius: 7px; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--t2); background: none; font-family: var(--font);
+  transition: all .18s; text-align: center;
+}
+.tab.active { background: var(--card); color: var(--t1); box-shadow: var(--shadow-sm); }
+.tab:hover:not(.active) { color: var(--t1); }
+
+/* ── BACKUP LIST ── */
+.backup-row {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border-radius: 8px; background: var(--bg); margin-bottom: 8px;
+  transition: background .15s;
+}
+.backup-row:hover { background: #e8eaed; }
+.backup-icon { font-size: 20px; flex-shrink: 0; }
+.backup-info { flex: 1; }
+.backup-name { font-size: 13px; font-weight: 700; color: var(--t1); font-family: var(--mono); }
+.backup-meta { font-size: 11px; color: var(--t2); margin-top: 2px; }
+.backup-size { font-size: 12px; font-weight: 700; color: var(--t3); flex-shrink: 0; }
+
+/* ── DB TABLE STATS ── */
+.db-row {
+  display: flex; align-items: center; gap: 12px; padding: 9px 0;
+  border-bottom: 1px solid rgba(0,0,0,.04);
+}
+.db-row:last-child { border-bottom: none; }
+.db-table-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--t1); font-family: var(--mono); }
+.db-count { font-size: 13px; font-weight: 800; color: var(--t1); width: 60px; text-align: right; }
+.db-bar-wrap { width: 100px; height: 5px; background: var(--bg); border-radius: 5px; overflow: hidden; }
+.db-bar { height: 100%; border-radius: 5px; background: var(--accent); }
+
+/* ── INTEGRITY CHECK ── */
+.integrity-ok {
+  display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+  background: #DFF6DD; border-radius: 10px; color: #0B5E0B; font-weight: 700; font-size: 13px;
+}
+.integrity-ok svg { width: 20px; height: 20px; }
+
+/* ── USER EDITOR MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4);
+  z-index: 1000; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--card); border-radius: 16px; width: 520px; max-height: 90vh;
+  box-shadow: 0 24px 80px rgba(0,0,0,.2); overflow: hidden; display: flex; flex-direction: column;
+}
+.modal-header {
+  padding: 22px 28px 0; display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 18px; font-weight: 800; color: var(--t1); }
+.modal-close {
+  width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer;
+  background: var(--bg); color: var(--t2); display: flex; align-items: center; justify-content: center;
+  font-size: 18px; line-height: 1; transition: background .15s;
+}
+.modal-close:hover { background: #e4e7eb; }
+.modal-stepper {
+  display: flex; align-items: center; gap: 0; padding: 20px 28px 16px;
+}
+.step-item { display: flex; align-items: center; gap: 8px; flex: 1; }
+.step-circle {
+  width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0;
+  background: var(--bg); color: var(--t3); border: 2px solid var(--border);
+}
+.step-circle.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.step-circle.done { background: var(--success-bg); color: var(--success); border-color: var(--success); }
+.step-label { font-size: 12px; font-weight: 700; color: var(--t2); }
+.step-label.active { color: var(--accent); }
+.step-line { flex: 1; height: 2px; background: var(--border); margin: 0 8px; }
+.step-line.done { background: var(--success); }
+.modal-body { padding: 0 28px 20px; overflow-y: auto; flex: 1; }
+.modal-footer {
+  padding: 16px 28px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+
+/* ── FORM FIELDS ── */
+.form-group { margin-bottom: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.form-label { font-size: 12px; font-weight: 700; color: var(--t2); margin-bottom: 6px; display: block; }
+.form-input {
+  width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border);
+  font-family: var(--font); font-size: 13px; color: var(--t1);
+  background: var(--card); transition: border-color .18s;
+}
+.form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,120,212,.1); }
+.form-select {
+  width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border);
+  font-family: var(--font); font-size: 13px; color: var(--t1); background: var(--card); cursor: pointer;
+}
+.form-avatar-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.form-avatar-preview {
+  width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #0078D4, #4DA3E8);
+  display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #fff;
+  flex-shrink: 0;
+}
+.form-avatar-actions { display: flex; flex-direction: column; gap: 6px; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+.toggle-info { font-size: 13px; font-weight: 600; color: var(--t1); }
+.toggle-info small { display: block; font-size: 11px; color: var(--t2); font-weight: 500; margin-top: 2px; }
+.toggle {
+  width: 40px; height: 22px; border-radius: 100px; background: var(--success);
+  position: relative; cursor: pointer; flex-shrink: 0; transition: background .2s;
+}
+.toggle::after {
+  content: ''; position: absolute; top: 3px; right: 3px;
+  width: 16px; height: 16px; border-radius: 50%; background: #fff;
+  transition: right .2s;
+}
+.toggle.off { background: rgba(0,0,0,.15); }
+.toggle.off::after { right: auto; left: 3px; }
+.pwd-row { position: relative; }
+.pwd-row .form-input { padding-right: 80px; font-family: var(--mono); }
+.pwd-actions {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  display: flex; gap: 4px;
+}
+.pwd-btn {
+  padding: 3px 8px; font-size: 11px; font-weight: 700; border-radius: 5px;
+  border: none; cursor: pointer; background: var(--bg); color: var(--t2);
+  font-family: var(--font); transition: background .15s;
+}
+.pwd-btn:hover { background: #dde0e4; }
+.pwd-strength { height: 3px; border-radius: 3px; margin-top: 5px; width: 100%; }
+.pwd-strength.strong { background: var(--success); }
+.pwd-strength.fair   { background: #F59E0B; }
+.pwd-strength.weak   { background: var(--error); }
+
+/* ── RIGHTS MATRIX ── */
+.rights-note {
+  display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+  background: #EFF6FC; border-radius: 10px; font-size: 13px; color: var(--accent-dark); font-weight: 600;
+}
+
+/* ── DOCK PANEL ── */
+.dock-overlay {
+  display: none; position: fixed; inset: 0; z-index: 999;
+}
+.dock-overlay.open { display: block; }
+.dock-panel {
+  position: fixed; top: 0; right: 0; width: 320px; height: 100vh;
+  background: var(--card); box-shadow: -8px 0 40px rgba(0,0,0,.15);
+  display: flex; flex-direction: column; transform: translateX(100%);
+  transition: transform .25s cubic-bezier(.32,.72,0,1); z-index: 1000;
+}
+.dock-panel.open { transform: translateX(0); }
+.dock-header {
+  padding: 20px 22px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.dock-title { font-size: 15px; font-weight: 800; color: var(--t1); }
+.dock-body { flex: 1; overflow-y: auto; padding: 22px; }
+.dock-avatar {
+  width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 14px;
+  background: linear-gradient(135deg, #0078D4, #4DA3E8);
+  display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #fff;
+}
+.dock-name { text-align: center; font-size: 16px; font-weight: 800; color: var(--t1); }
+.dock-sub { text-align: center; font-size: 12px; color: var(--t2); margin-bottom: 20px; }
+.dock-stat-row { display: flex; gap: 0; margin-bottom: 20px; background: var(--bg); border-radius: 10px; }
+.dock-stat { flex: 1; padding: 12px; text-align: center; }
+.dock-stat-v { font-size: 18px; font-weight: 800; color: var(--t1); }
+.dock-stat-l { font-size: 10px; color: var(--t3); font-weight: 600; }
+.dock-stat-divider { width: 1px; background: var(--border); }
+.dock-info-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,.04); }
+.dock-info-row:last-child { border-bottom: none; }
+.dock-info-label { font-size: 12px; color: var(--t2); font-weight: 600; width: 100px; flex-shrink: 0; }
+.dock-info-val { font-size: 12px; color: var(--t1); font-weight: 600; flex: 1; }
+.dock-actions { padding: 16px 22px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+
+/* ── GRIDS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3-2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; }
+.grid-1-1 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+</style>
+</head>
+<body>
+
+<!-- USER EDITOR MODAL -->
+<div class="modal-overlay" id="userEditorModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Создать пользователя</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <!-- Stepper -->
+    <div class="modal-stepper">
+      <div class="step-item">
+        <div class="step-circle active" id="step1circle">1</div>
+        <div class="step-label active">Основное</div>
+      </div>
+      <div class="step-line" id="stepLine"></div>
+      <div class="step-item">
+        <div class="step-circle" id="step2circle">2</div>
+        <div class="step-label" id="step2label">Права</div>
+      </div>
+    </div>
+    <!-- Step 1 -->
+    <div class="modal-body" id="modalStep1">
+      <div class="form-avatar-row">
+        <div class="form-avatar-preview" id="avatarPreview">НП</div>
+        <div class="form-avatar-actions">
+          <button class="action-btn ghost sm">📷 Загрузить фото</button>
+          <button class="action-btn ghost sm">🗑 Удалить</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label class="form-label">Фамилия</label>
+          <input class="form-input" value="Новый" oninput="updateAvatar()">
+        </div>
+        <div>
+          <label class="form-label">Имя</label>
+          <input class="form-input" value="Пользователь" oninput="updateAvatar()">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label class="form-label">Логин</label>
+          <input class="form-input" value="new.user">
+        </div>
+        <div>
+          <label class="form-label">Роль</label>
+          <select class="form-select">
+            <option>Студент</option>
+            <option>Преподаватель</option>
+            <option>Администратор</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Группа</label>
+        <select class="form-select">
+          <option>Группа №2 (леч.)</option>
+          <option>Группа №4 (воен.)</option>
+          <option>Группа №7 (мед.-проф.)</option>
+          <option>— Без группы —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Пароль</label>
+        <div class="pwd-row">
+          <input class="form-input" type="password" value="Secure#Pass9" id="pwdInput">
+          <div class="pwd-actions">
+            <button class="pwd-btn" onclick="togglePwd()">👁</button>
+            <button class="pwd-btn" onclick="genPwd()">🔀</button>
+          </div>
+        </div>
+        <div class="pwd-strength strong" id="pwdStrength"></div>
+        <div style="font-size:11px;color:var(--success);margin-top:4px;font-weight:600" id="pwdHint">Надёжный пароль</div>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          Учётная запись активна
+          <small>Пользователь может войти в систему</small>
+        </div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+    </div>
+    <!-- Step 2 (hidden) -->
+    <div class="modal-body" id="modalStep2" style="display:none">
+      <div class="rights-note">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01" stroke-linecap="round"/></svg>
+        Права назначены автоматически по роли «Студент». Расширенная настройка не требуется.
+      </div>
+      <div style="margin-top:16px;font-size:13px;color:var(--t2);line-height:1.6">
+        Роль <strong style="color:var(--t1)">Студент</strong> предоставляет доступ к:
+        просмотру назначенных кейсов, прохождению тестирования, просмотру собственных результатов и профиля.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn ghost" id="modalBack" onclick="modalPrev()" style="visibility:hidden">← Назад</button>
+      <div style="display:flex;gap:10px">
+        <button class="action-btn ghost" onclick="closeModal()">Отмена</button>
+        <button class="action-btn primary" id="modalNext" onclick="modalNext()">Далее →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DOCK PANEL -->
+<div class="dock-overlay" id="dockOverlay" onclick="closeDock()"></div>
+<div class="dock-panel" id="dockPanel">
+  <div class="dock-header">
+    <div class="dock-title">Карточка пользователя</div>
+    <button class="modal-close" onclick="closeDock()">✕</button>
+  </div>
+  <div class="dock-body">
+    <div class="dock-avatar">ИИ</div>
+    <div class="dock-name">Иванов Иван Иванович</div>
+    <div class="dock-sub">Студент · Группа №2 (леч.)</div>
+    <div class="dock-stat-row">
+      <div class="dock-stat"><div class="dock-stat-v">8</div><div class="dock-stat-l">Кейсов</div></div>
+      <div class="dock-stat-divider"></div>
+      <div class="dock-stat"><div class="dock-stat-v" style="color:var(--success)">78%</div><div class="dock-stat-l">Ср.балл</div></div>
+      <div class="dock-stat-divider"></div>
+      <div class="dock-stat"><div class="dock-stat-v">14</div><div class="dock-stat-l">Попыток</div></div>
+    </div>
+    <div class="dock-info-row"><div class="dock-info-label">Логин</div><div class="dock-info-val" style="font-family:var(--mono)">ivanov.i</div></div>
+    <div class="dock-info-row"><div class="dock-info-label">Роль</div><div class="dock-info-val"><span class="role-badge role-student">● Студент</span></div></div>
+    <div class="dock-info-row"><div class="dock-info-label">Статус</div><div class="dock-info-val"><span class="status-badge status-active"><span class="status-dot"></span>Активен</span></div></div>
+    <div class="dock-info-row"><div class="dock-info-label">Группа</div><div class="dock-info-val">№2 (леч.)</div></div>
+    <div class="dock-info-row"><div class="dock-info-label">Последний вход</div><div class="dock-info-val">Сегодня, 09:14</div></div>
+    <div class="dock-info-row"><div class="dock-info-label">Создан</div><div class="dock-info-val">01.09.2025</div></div>
+  </div>
+  <div class="dock-actions">
+    <button class="action-btn ghost" style="width:100%;justify-content:center" onclick="openModal()">✏️ Редактировать</button>
+    <button class="action-btn danger" style="width:100%;justify-content:center">🔒 Заблокировать</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="logo-row">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="7" r="3.5" stroke="rgba(255,255,255,.9)" stroke-width="1.5"/>
+            <path d="M12 11 L8 18 M12 11 L16 18" stroke="rgba(255,255,255,.9)" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="8" cy="18.5" r="2.5" fill="rgba(78,232,122,.9)"/>
+            <circle cx="16" cy="18.5" r="2" fill="rgba(255,255,255,.3)"/>
+          </svg>
+        </div>
+        <div>
+          <span class="logo-name"><span>Edu</span>Case</span>
+          <span class="logo-admin-badge">Admin</span>
+        </div>
+      </div>
+      <div class="user-card">
+        <div class="avatar">АА</div>
+        <div>
+          <div class="user-name">Администратор</div>
+          <div class="user-role">Полный доступ</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Управление</div>
+      <button class="nav-item active" onclick="switchView('a-dashboard',this)">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h3a1 1 0 001-1v-3h2v3a1 1 0 001 1h3a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        Панель управления
+      </button>
+      <button class="nav-item" onclick="switchView('a-users',this)">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z"/></svg>
+        Пользователи
+        <span class="nav-badge">47</span>
+      </button>
+      <button class="nav-item" onclick="switchView('a-system',this)">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+        Система
+      </button>
+      <button class="nav-item" onclick="switchView('a-logs',this)">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+        Журнал событий
+        <span class="nav-badge warn">3</span>
+      </button>
+      <div class="nav-section-label" style="margin-top:6px">Аккаунт</div>
+      <button class="nav-item">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/></svg>
+        Профиль
+      </button>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="logout-btn">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/></svg>
+        Выйти
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Панель администратора</div>
+      <div class="topbar-spacer"></div>
+      <div class="topbar-date" id="topbarDate"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══════════════ A-1: DASHBOARD ═══════════════ -->
+      <div class="view active" id="view-a-dashboard">
+        <!-- Stat row -->
+        <div class="stat-row">
+          <div class="stat-card" style="--card-accent:#0078D4;--icon-bg:#EFF6FC">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="stat-body"><div class="stat-label">Пользователей</div><div class="stat-value">47</div><div class="stat-delta up">↑ 2 за неделю</div></div>
+          </div>
+          <div class="stat-card" style="--card-accent:#107C10;--icon-bg:#DFF6DD">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#107C10" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 12v5c3 3 9 3 12 0v-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="stat-body"><div class="stat-label">Студентов</div><div class="stat-value">40</div><div class="stat-delta up">↑ 2 добавлено</div></div>
+          </div>
+          <div class="stat-card" style="--card-accent:#4DA3E8;--icon-bg:#EFF6FC">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#0078D4" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14" stroke-linecap="round"/></svg></div>
+            <div class="stat-body"><div class="stat-label">Преподавателей</div><div class="stat-value">5</div><div class="stat-delta neutral">— без изменений</div></div>
+          </div>
+          <div class="stat-card" style="--card-accent:#9D5D00;--icon-bg:#FFF4CE">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#9D5D00" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="stat-body"><div class="stat-label">Кейсов</div><div class="stat-value">23</div><div class="stat-delta up">↑ 3 новых</div></div>
+          </div>
+        </div>
+
+        <!-- System info card -->
+        <div class="sysinfo-card">
+          <div class="sysinfo-item">
+            <div class="sysinfo-label">Размер БД</div>
+            <div class="sysinfo-value">14.2<span style="font-size:16px;opacity:.5"> МБ</span></div>
+            <div class="sysinfo-ok">● Норма</div>
+          </div>
+          <div class="sysinfo-item">
+            <div class="sysinfo-label">Последний бэкап</div>
+            <div class="sysinfo-value">2<span style="font-size:16px;opacity:.5"> ч назад</span></div>
+            <div class="sysinfo-ok">● Актуальный</div>
+          </div>
+          <div class="sysinfo-item">
+            <div class="sysinfo-label">Целостность БД</div>
+            <div class="sysinfo-value" style="font-size:16px;padding-top:4px">integrity_check</div>
+            <div class="sysinfo-ok">● ok</div>
+          </div>
+          <div class="sysinfo-item">
+            <div class="sysinfo-label">Версия приложения</div>
+            <div class="sysinfo-value" style="font-family:var(--mono);font-size:20px">v1.0.0</div>
+            <div class="sysinfo-sub" style="margin-top:6px">Python 3.12 · PySide6 6.7</div>
+          </div>
+          <div class="sysinfo-item">
+            <div class="sysinfo-label">Журнал ошибок</div>
+            <div class="sysinfo-value">3</div>
+            <div class="sysinfo-ok sysinfo-warn">● WARNING</div>
+          </div>
+        </div>
+
+        <!-- Activity chart + user role pie -->
+        <div class="grid-3-2" style="margin-bottom:20px">
+          <div class="card" style="margin-bottom:0">
+            <div class="card-title">Активность системы — последние 7 дней</div>
+            <div style="height:200px;position:relative"><canvas id="activityChart"></canvas></div>
+          </div>
+          <div class="card" style="margin-bottom:0">
+            <div class="card-title">Состав пользователей</div>
+            <div style="height:200px;position:relative"><canvas id="roleChart"></canvas></div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:#107C10"></div>Студенты — 40</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:#0078D4"></div>Преподаватели — 5</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:#C42B1C"></div>Администраторы — 2</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent users + quick actions -->
+        <div class="grid-1-1">
+          <div class="card" style="margin-bottom:0">
+            <div class="card-title">Последние регистрации <a class="card-link" onclick="switchView('a-users', document.querySelector('.nav-item:nth-child(3)'))">Все →</a></div>
+            <table class="data-table">
+              <thead><tr><th>Пользователь</th><th>Роль</th><th>Дата</th><th></th></tr></thead>
+              <tbody>
+                <tr onclick="openDock()"><td><div style="font-weight:700">Иванов Иван И.</div><div style="font-size:11px;color:var(--t2)">ivanov.i</div></td><td><span class="role-badge role-student">● Студент</span></td><td style="font-size:12px;color:var(--t2)">09.03.2026</td><td><span class="status-badge status-active"><span class="status-dot"></span>Активен</span></td></tr>
+                <tr><td><div style="font-weight:700">Петрова Анна С.</div><div style="font-size:11px;color:var(--t2)">petrova.a</div></td><td><span class="role-badge role-student">● Студент</span></td><td style="font-size:12px;color:var(--t2)">07.03.2026</td><td><span class="status-badge status-active"><span class="status-dot"></span>Активен</span></td></tr>
+                <tr><td><div style="font-weight:700">Смирнова Е.В.</div><div style="font-size:11px;color:var(--t2)">smirnova.ev</div></td><td><span class="role-badge role-teacher">● Преп.</span></td><td style="font-size:12px;color:var(--t2)">01.03.2026</td><td><span class="status-badge status-active"><span class="status-dot"></span>Активен</span></td></tr>
+                <tr><td><div style="font-weight:700">Козлов Максим Р.</div><div style="font-size:11px;color:var(--t2)">kozlov.m</div></td><td><span class="role-badge role-student">● Студент</span></td><td style="font-size:12px;color:var(--t2)">25.02.2026</td><td><span class="status-badge status-locked"><span class="status-dot"></span>Заблок.</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card" style="margin-bottom:0">
+            <div class="card-title">Быстрые действия</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <button class="action-btn primary" style="justify-content:center" onclick="openModal()">➕ Создать пользователя</button>
+              <button class="action-btn ghost" style="justify-content:center" onclick="switchView('a-system', document.querySelectorAll('.nav-item')[2])">💾 Создать резервную копию</button>
+              <button class="action-btn ghost" style="justify-content:center" onclick="switchView('a-logs', document.querySelectorAll('.nav-item')[3])">📋 Просмотр журнала (3 WARNING)</button>
+              <button class="action-btn ghost" style="justify-content:center">🔧 Проверить целостность БД</button>
+              <button class="action-btn ghost" style="justify-content:center">📊 Экспортировать отчёт</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ A-2: USERS ═══════════════ -->
+      <div class="view" id="view-a-users">
+        <div class="filter-row">
+          <button class="action-btn primary" onclick="openModal()">➕ Создать пользователя</button>
+          <div class="search-input">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style="opacity:.4"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+            Поиск по ФИО или логину
+          </div>
+          <select class="filter-select"><option>Все роли</option><option>Студент</option><option>Преподаватель</option><option>Администратор</option></select>
+          <select class="filter-select"><option>Все статусы</option><option>Активные</option><option>Заблокированные</option></select>
+          <div class="topbar-spacer"></div>
+          <button class="action-btn danger sm">🔒 Заблокировать выбранных</button>
+          <button class="action-btn ghost sm">🗑 Удалить выбранных</button>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" style="width:14px;height:14px;cursor:pointer"></th>
+                <th>ФИО / Логин</th><th>Роль</th><th>Группа</th><th>Статус</th><th>Последний вход</th><th>Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="openDock()">
+                <td><input type="checkbox" style="width:14px;height:14px;cursor:pointer" onclick="e=>e.stopPropagation()"></td>
+                <td><div style="font-weight:700">Иванов Иван Иванович</div><div style="font-size:11px;color:var(--t2);font-family:var(--mono)">ivanov.i</div></td>
+                <td><span class="role-badge role-student">● Студент</span></td>
+                <td style="font-size:12px;color:var(--t2)">Группа №2 (леч.)</td>
+                <td><span class="status-badge status-active"><span class="status-dot"></span>Активен</span></td>
+                <td style="font-size:12px;color:var(--t2)">Сегодня, 09:14</td>
+                <td><div style="display:flex;gap:6px">
+                  <button class="icon-btn" title="Редактировать" onclick="openModal();event.stopPropagation()"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg></button>
+                  <button class="icon-btn danger" title="Заблокировать" onclick="event.stopPropagation()"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg></button>
+                </div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="width:14px;height:14px;cursor:pointer"></td>
+                <td><div style="font-weight:700">Смирнова Елена Викторовна</div><div style="font-size:11px;color:var(--t2);font-family:var(--mono)">smirnova.ev</div></td>
+                <td><span class="role-badge role-teacher">● Преподаватель</span></td>
+                <td style="font-size:12px;color:var(--t2)">—</td>
+                <td><span class="status-badge status-active"><span class="status-dot"></span>Активна</span></td>
+                <td style="font-size:12px;color:var(--t2)">Сегодня, 08:30</td>
+                <td><div style="display:flex;gap:6px">
+                  <button class="icon-btn"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg></button>
+                  <button class="icon-btn danger"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg></button>
+                </div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="width:14px;height:14px;cursor:pointer"></td>
+                <td><div style="font-weight:700">Козлов Максим Романович</div><div style="font-size:11px;color:var(--t2);font-family:var(--mono)">kozlov.m</div></td>
+                <td><span class="role-badge role-student">● Студент</span></td>
+                <td style="font-size:12px;color:var(--t2)">Группа №4 (воен.)</td>
+                <td><span class="status-badge status-locked"><span class="status-dot"></span>Заблокирован</span></td>
+                <td style="font-size:12px;color:var(--t2)">5 дней назад</td>
+                <td><div style="display:flex;gap:6px">
+                  <button class="icon-btn"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg></button>
+                  <button class="icon-btn" title="Разблокировать" style="color:var(--success)"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z"/></svg></button>
+                </div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="width:14px;height:14px;cursor:pointer"></td>
+                <td><div style="font-weight:700">Петрова Анна Сергеевна</div><div style="font-size:11px;color:var(--t2);font-family:var(--mono)">petrova.a</div></td>
+                <td><span class="role-badge role-student">● Студент</span></td>
+                <td style="font-size:12px;color:var(--t2)">Группа №2 (леч.)</td>
+                <td><span class="status-badge status-active"><span class="status-dot"></span>Активна</span></td>
+                <td style="font-size:12px;color:var(--t2)">Вчера, 16:42</td>
+                <td><div style="display:flex;gap:6px">
+                  <button class="icon-btn"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg></button>
+                  <button class="icon-btn danger"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg></button>
+                </div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="width:14px;height:14px;cursor:pointer"></td>
+                <td><div style="font-weight:700">Администратор</div><div style="font-size:11px;color:var(--t2);font-family:var(--mono)">admin</div></td>
+                <td><span class="role-badge role-admin">● Администратор</span></td>
+                <td style="font-size:12px;color:var(--t2)">—</td>
+                <td><span class="status-badge status-active"><span class="status-dot"></span>Активен</span></td>
+                <td style="font-size:12px;color:var(--t2)">Сейчас</td>
+                <td><div style="display:flex;gap:6px">
+                  <button class="icon-btn"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg></button>
+                </div></td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+            <div style="font-size:12px;color:var(--t2);font-weight:600">Показано 5 из 47</div>
+            <div style="display:flex;gap:6px">
+              <button class="action-btn ghost sm">← Назад</button>
+              <button class="action-btn primary sm" style="background:var(--bg);color:var(--t1);border:1px solid var(--border)">1</button>
+              <button class="action-btn ghost sm">2</button>
+              <button class="action-btn ghost sm">3</button>
+              <button class="action-btn ghost sm">Вперёд →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ A-4: SYSTEM ═══════════════ -->
+      <div class="view" id="view-a-system">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab(this,'tab-general')">⚙️ Общее</button>
+          <button class="tab" onclick="switchTab(this,'tab-db')">🗄️ База данных</button>
+          <button class="tab" onclick="switchTab(this,'tab-backup')">💾 Резервные копии</button>
+          <button class="tab" onclick="switchTab(this,'tab-design')">🎨 Дизайн</button>
+        </div>
+
+        <!-- Общее -->
+        <div id="tab-general">
+          <div class="grid-1-1">
+            <div class="card" style="margin-bottom:0">
+              <div class="card-title">Информация о приложении</div>
+              <div class="db-row"><div class="db-table-name">Версия</div><div class="db-count" style="font-family:var(--mono);color:var(--accent)">v1.0.0</div></div>
+              <div class="db-row"><div class="db-table-name">Python</div><div class="db-count" style="font-family:var(--mono)">3.12.0</div></div>
+              <div class="db-row"><div class="db-table-name">PySide6</div><div class="db-count" style="font-family:var(--mono)">6.7.3</div></div>
+              <div class="db-row"><div class="db-table-name">SQLAlchemy</div><div class="db-count" style="font-family:var(--mono)">2.0.36</div></div>
+              <div class="db-row" style="border-bottom:none"><div class="db-table-name">Путь к БД</div><div style="font-size:11px;color:var(--t2);font-family:var(--mono);text-align:right;flex:1;word-break:break-all">%APPDATA%\EduCase\educase.db</div></div>
+            </div>
+            <div class="card" style="margin-bottom:0">
+              <div class="card-title">Настройки</div>
+              <div class="toggle-row">
+                <div class="toggle-info">Автоматические бэкапы<small>Создавать копию каждые 24 часа</small></div>
+                <div class="toggle"></div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">Логирование действий<small>Записывать все события в журнал</small></div>
+                <div class="toggle"></div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">Анимации интерфейса<small>Переходы и эффекты</small></div>
+                <div class="toggle"></div>
+              </div>
+              <div class="form-group" style="margin-top:14px">
+                <label class="form-label">Хранить бэкапы (дней)</label>
+                <input class="form-input" type="number" value="30" min="1" max="365">
+              </div>
+              <button class="action-btn primary" style="width:100%;justify-content:center;margin-top:4px">Сохранить настройки</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- БД -->
+        <div id="tab-db" style="display:none">
+          <div class="grid-1-1">
+            <div class="card" style="margin-bottom:0">
+              <div class="card-title">Статистика таблиц</div>
+              <div class="db-row"><div class="db-table-name">users</div><div class="db-bar-wrap"><div class="db-bar" style="width:100%"></div></div><div class="db-count">47</div></div>
+              <div class="db-row"><div class="db-table-name">cases</div><div class="db-bar-wrap"><div class="db-bar" style="width:49%"></div></div><div class="db-count">23</div></div>
+              <div class="db-row"><div class="db-table-name">attempts</div><div class="db-bar-wrap"><div class="db-bar" style="width:80%"></div></div><div class="db-count">384</div></div>
+              <div class="db-row"><div class="db-table-name">answers</div><div class="db-bar-wrap"><div class="db-bar" style="width:95%"></div></div><div class="db-count">4 512</div></div>
+              <div class="db-row"><div class="db-table-name">groups</div><div class="db-bar-wrap"><div class="db-bar" style="width:12%"></div></div><div class="db-count">6</div></div>
+              <div class="db-row"><div class="db-table-name">tasks</div><div class="db-bar-wrap"><div class="db-bar" style="width:60%"></div></div><div class="db-count">287</div></div>
+              <div class="db-row"><div class="db-table-name">system_logs</div><div class="db-bar-wrap"><div class="db-bar" style="width:70%"></div></div><div class="db-count">1 203</div></div>
+            </div>
+            <div class="card" style="margin-bottom:0">
+              <div class="card-title">Обслуживание БД</div>
+              <div style="font-size:12px;color:var(--t2);margin-bottom:16px;line-height:1.5">Размер файла: <strong style="color:var(--t1)">14.2 МБ</strong> · WAL-режим: <strong style="color:var(--success)">включён</strong> · PRAGMA journal_mode=WAL</div>
+              <div class="integrity-ok" style="margin-bottom:12px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                integrity_check: ok
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <button class="action-btn ghost" style="justify-content:center">🔧 Запустить VACUUM</button>
+                <button class="action-btn ghost" style="justify-content:center">✅ Проверить целостность</button>
+                <button class="action-btn ghost" style="justify-content:center">📊 Analyze (обновить статистику)</button>
+                <button class="action-btn danger" style="justify-content:center;margin-top:6px">🗑 Очистить логи старше 90 дней</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Бэкапы -->
+        <div id="tab-backup" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div style="font-size:13px;color:var(--t2);font-weight:600">3 резервных копии · автобэкап каждые 24ч</div>
+            <button class="action-btn primary">💾 Создать бэкап сейчас</button>
+          </div>
+          <div class="backup-row">
+            <div class="backup-icon">🗄️</div>
+            <div class="backup-info">
+              <div class="backup-name">backup_20260311_060000.db</div>
+              <div class="backup-meta">11 марта 2026, 06:00 · Автоматический</div>
+            </div>
+            <div class="backup-size">14.1 МБ</div>
+            <button class="action-btn ghost sm">♻️ Восстановить</button>
+            <button class="action-btn danger sm">🗑</button>
+          </div>
+          <div class="backup-row">
+            <div class="backup-icon">🗄️</div>
+            <div class="backup-info">
+              <div class="backup-name">backup_20260310_060000.db</div>
+              <div class="backup-meta">10 марта 2026, 06:00 · Автоматический</div>
+            </div>
+            <div class="backup-size">13.8 МБ</div>
+            <button class="action-btn ghost sm">♻️ Восстановить</button>
+            <button class="action-btn danger sm">🗑</button>
+          </div>
+          <div class="backup-row">
+            <div class="backup-icon">🗄️</div>
+            <div class="backup-info">
+              <div class="backup-name">backup_20260309_142311.db</div>
+              <div class="backup-meta">9 марта 2026, 14:23 · Ручной</div>
+            </div>
+            <div class="backup-size">13.5 МБ</div>
+            <button class="action-btn ghost sm">♻️ Восстановить</button>
+            <button class="action-btn danger sm">🗑</button>
+          </div>
+        </div>
+
+        <!-- Дизайн -->
+        <div id="tab-design" style="display:none">
+          <div class="grid-1-1">
+            <div class="card" style="margin-bottom:0">
+              <div class="card-title">Внешний вид</div>
+              <div class="form-group">
+                <label class="form-label">Цвет акцента</label>
+                <div style="display:flex;gap:10px;align-items:center">
+                  <input type="color" value="#0078D4" style="width:44px;height:36px;border-radius:8px;border:1px solid var(--border);cursor:pointer;padding:2px">
+                  <input class="form-input" value="#0078D4" style="flex:1;font-family:var(--mono)">
+                </div>
+                <div style="display:flex;gap:8px;margin-top:10px">
+                  <div style="width:32px;height:32px;border-radius:8px;background:#0078D4;cursor:pointer;border:2px solid var(--accent)"></div>
+                  <div style="width:32px;height:32px;border-radius:8px;background:#107C10;cursor:pointer"></div>
+                  <div style="width:32px;height:32px;border-radius:8px;background:#6B21A8;cursor:pointer"></div>
+                  <div style="width:32px;height:32px;border-radius:8px;background:#9D5D00;cursor:pointer"></div>
+                  <div style="width:32px;height:32px;border-radius:8px;background:#C42B1C;cursor:pointer"></div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Скорость анимаций</label>
+                <input type="range" min="50" max="200" value="100" style="width:100%;accent-color:var(--accent)">
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:4px">
+                  <span>0.5× (быстрее)</span><span>1.0× (норма)</span><span>2.0× (медленнее)</span>
+                </div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">Тёмная тема<small>Применить ко всему интерфейсу</small></div>
+                <div class="toggle off"></div>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:0">
+              <div class="card-title">Предпросмотр</div>
+              <div style="background:var(--bg);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="background:#0078D4;color:#fff;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;text-align:center">Кнопка акцент</div>
+                <div style="background:var(--card);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;text-align:center;color:var(--t1)">Кнопка ghost</div>
+                <div style="background:var(--card);border-radius:10px;padding:14px;border-left:3px solid #0078D4">
+                  <div style="font-size:12px;font-weight:800;color:var(--t1)">Карточка</div>
+                  <div style="font-size:11px;color:var(--t2);margin-top:4px">Предпросмотр компонентов интерфейса</div>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <span class="role-badge role-student">● Студент</span>
+                  <span class="role-badge role-teacher">● Преп.</span>
+                  <span class="role-badge role-admin">● Админ</span>
+                </div>
+              </div>
+              <button class="action-btn primary" style="width:100%;justify-content:center;margin-top:14px">Применить тему</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ A-5: LOGS ═══════════════ -->
+      <div class="view" id="view-a-logs">
+        <div class="filter-row">
+          <div class="search-input"><svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style="opacity:.4"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>Поиск по событиям</div>
+          <select class="filter-select"><option>Все уровни</option><option>INFO</option><option>WARNING</option><option>ERROR</option><option>DEBUG</option></select>
+          <select class="filter-select"><option>Все пользователи</option><option>admin</option><option>ivanov.i</option><option>smirnova.ev</option></select>
+          <div style="display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--t2)">📅 11.03.2026</div>
+          <div class="topbar-spacer"></div>
+          <button class="action-btn ghost sm">📥 Экспорт CSV</button>
+          <button class="action-btn danger sm">🗑 Очистить >90 дней</button>
+        </div>
+
+        <!-- Warning summary -->
+        <div style="display:flex;gap:10px;margin-bottom:16px">
+          <div style="flex:1;background:#FDE7E9;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;border:1px solid rgba(196,43,28,.15)">
+            <span style="font-size:20px">⚠️</span>
+            <div><div style="font-size:13px;font-weight:800;color:var(--error)">3 события WARNING</div><div style="font-size:11px;color:#a03030">Требуют внимания за последние 24 часа</div></div>
+          </div>
+          <div style="flex:1;background:#EFF6FC;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;border:1px solid rgba(0,120,212,.15)">
+            <span style="font-size:20px">ℹ️</span>
+            <div><div style="font-size:13px;font-weight:800;color:var(--accent)">1 203 записи всего</div><div style="font-size:11px;color:var(--accent-dark)">За последние 30 дней</div></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:0">
+          <table class="data-table">
+            <thead><tr><th>Время</th><th>Уровень</th><th>Пользователь</th><th>Действие</th><th>Детали</th></tr></thead>
+            <tbody>
+              <tr style="background:rgba(196,43,28,.03)">
+                <td style="font-family:var(--mono);font-size:11px;color:var(--t2)">11.03 09:14:32</td>
+                <td><span class="log-badge log-warning">WARNING</span></td>
+                <td style="font-size:12px;font-family:var(--mono)">ivanov.i</td>
+                <td style="font-size:12px;font-weight:600">login_failed</td>
+                <td style="font-size:12px;color:var(--t2)">Неверный пароль (попытка 3/5)<button class="action-btn ghost sm" style="margin-left:8px">JSON</button></td>
+              </tr>
+              <tr style="background:rgba(196,43,28,.03)">
+                <td style="font-family:var(--mono);font-size:11px;color:var(--t2)">11.03 08:55:10</td>
+                <td><span class="log-badge log-warning">WARNING</span></td>
+                <td style="font-size:12px;font-family:var(--mono)">—</td>
+                <td style="font-size:12px;font-weight:600">db_size_threshold</td>
+                <td style="font-size:12px;color:var(--t2)">БД превысила 14MB (порог 50MB)<button class="action-btn ghost sm" style="margin-left:8px">JSON</button></td>
+              </tr>
+              <tr style="background:rgba(196,43,28,.03)">
+                <td style="font-family:var(--mono);font-size:11px;color:var(--t2)">10.03 22:01:05</td>
+                <td><span class="log-badge log-warning">WARNING</span></td>
+                <td style="font-size:12px;font-family:var(--mono)">kozlov.m</td>
+                <td style="font-size:12px;font-weight:600">account_locked</td>
+                <td style="font-size:12px;color:var(--t2)">Аккаунт заблокирован (5 неверных попыток)<button class="action-btn ghost sm" style="margin-left:8px">JSON</button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--mono);font-size:11px;color:var(--t2)">11.03 09:14:45</td>
+                <td><span class="log-badge log-info">INFO</span></td>
+                <td style="font-size:12px;font-family:var(--mono)">ivanov.i</td>
+                <td style="font-size:12px;font-weight:600">login_success</td>
+                <td style="font-size:12px;color:var(--t2)">Успешный вход в систему<button class="action-btn ghost sm" style="margin-left:8px">JSON</button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--mono);font-size:11px;color:var(--t2)">11.03 09:00:01</td>
+                <td><span class="log-badge log-info">INFO</span></td>
+                <td style="font-size:12px;font-family:var(--mono)">—</td>
+                <td style="font-size:12px;font-weight:600">backup_created</td>
+                <td style="font-size:12px;color:var(--t2)">backup_20260311_060000.db (14.1 МБ)<button class="action-btn ghost sm" style="margin-left:8px">JSON</button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--mono);font-size:11px;color:var(--t2)">11.03 08:30:12</td>
+                <td><span class="log-badge log-info">INFO</span></td>
+                <td style="font-size:12px;font-family:var(--mono)">smirnova.ev</td>
+                <td style="font-size:12px;font-weight:600">login_success</td>
+                <td style="font-size:12px;color:var(--t2)">Успешный вход в систему<button class="action-btn ghost sm" style="margin-left:8px">JSON</button></td>
+              </tr>
+              <tr>
+                <td style="font-family:var(--mono);font-size:11px;color:var(--t2)">11.03 08:28:00</td>
+                <td><span class="log-badge log-info">INFO</span></td>
+                <td style="font-size:12px;font-family:var(--mono)">—</td>
+                <td style="font-size:12px;font-weight:600">app_started</td>
+                <td style="font-size:12px;color:var(--t2)">EduCase v1.0.0 запущен<button class="action-btn ghost sm" style="margin-left:8px">JSON</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// Date
+document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('ru-RU', {day:'numeric',month:'long',year:'numeric'});
+
+// View switch
+function switchView(id, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('view-' + id);
+  if (el) { el.classList.add('active'); el.style.animation='none'; void el.offsetWidth; el.style.animation=''; }
+  if (btn) btn.classList.add('active');
+  const titles = {'a-dashboard':'Панель администратора','a-users':'Управление пользователями','a-system':'Настройки системы','a-logs':'Журнал событий'};
+  document.getElementById('topbarTitle').textContent = titles[id] || '';
+  setTimeout(initCharts, 60);
+}
+
+// Tab switch
+function switchTab(btn, tabId) {
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  ['tab-general','tab-db','tab-backup','tab-design'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id === tabId ? 'block' : 'none';
+  });
+}
+
+// Modal
+let modalStep = 1;
+function openModal() {
+  document.getElementById('userEditorModal').classList.add('open');
+  modalStep = 1; updateModalStep();
+}
+function closeModal() { document.getElementById('userEditorModal').classList.remove('open'); }
+function modalNext() {
+  if (modalStep === 1) { modalStep = 2; updateModalStep(); }
+  else { closeModal(); }
+}
+function modalPrev() { if (modalStep === 2) { modalStep = 1; updateModalStep(); } }
+function updateModalStep() {
+  document.getElementById('modalStep1').style.display = modalStep === 1 ? 'block' : 'none';
+  document.getElementById('modalStep2').style.display = modalStep === 2 ? 'block' : 'none';
+  document.getElementById('modalBack').style.visibility = modalStep === 2 ? 'visible' : 'hidden';
+  document.getElementById('modalNext').textContent = modalStep === 2 ? '✓ Создать пользователя' : 'Далее →';
+  document.getElementById('step1circle').className = 'step-circle ' + (modalStep > 1 ? 'done' : 'active');
+  document.getElementById('step1circle').textContent = modalStep > 1 ? '✓' : '1';
+  document.getElementById('step2circle').className = 'step-circle ' + (modalStep === 2 ? 'active' : '');
+  document.getElementById('stepLine').className = 'step-line ' + (modalStep > 1 ? 'done' : '');
+  document.getElementById('step2label').className = 'step-label ' + (modalStep === 2 ? 'active' : '');
+}
+function updateAvatar() {
+  const inputs = document.querySelectorAll('.modal .form-input');
+  const f = inputs[0]?.value[0] || 'Н';
+  const l = inputs[1]?.value[0] || 'П';
+  document.getElementById('avatarPreview').textContent = f + l;
+}
+function togglePwd() {
+  const i = document.getElementById('pwdInput');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+function genPwd() {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$';
+  document.getElementById('pwdInput').value = Array.from({length:12}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  document.getElementById('pwdInput').type = 'text';
+}
+
+// Dock
+function openDock() {
+  document.getElementById('dockPanel').classList.add('open');
+  document.getElementById('dockOverlay').classList.add('open');
+}
+function closeDock() {
+  document.getElementById('dockPanel').classList.remove('open');
+  document.getElementById('dockOverlay').classList.remove('open');
+}
+
+// Charts
+Chart.defaults.font.family = "'Nunito', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#9BA3B4';
+let charts = {};
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+function initCharts() {
+  if (document.getElementById('view-a-dashboard')?.classList.contains('active')) {
+    destroyChart('activity');
+    const ac = document.getElementById('activityChart')?.getContext('2d');
+    if (ac) charts.activity = new Chart(ac, {
+      type: 'bar',
+      data: {
+        labels: ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],
+        datasets: [
+          { label: 'Попытки', data: [8,14,11,16,12,6,3], backgroundColor: 'rgba(0,120,212,0.75)', borderRadius: 5, borderSkipped: false },
+          { label: 'Завершены', data: [5,10,7,13,9,4,2], backgroundColor: 'rgba(16,124,16,0.75)', borderRadius: 5, borderSkipped: false },
+          { label: 'Новые пользователи', data: [1,0,2,0,1,0,0], backgroundColor: 'rgba(196,43,28,0.6)', borderRadius: 5, borderSkipped: false }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 10, padding: 14 } } },
+        scales: {
+          x: { grid: { display: false }, border: { display: false } },
+          y: { grid: { color: 'rgba(0,0,0,.05)' }, border: { display: false }, beginAtZero: true }
+        }, animation: { duration: 900 }
+      }
+    });
+
+    destroyChart('role');
+    const rc = document.getElementById('roleChart')?.getContext('2d');
+    if (rc) charts.role = new Chart(rc, {
+      type: 'doughnut',
+      data: {
+        labels: ['Студенты','Преподаватели','Администраторы'],
+        datasets: [{ data: [40,5,2], backgroundColor: ['#107C10','#0078D4','#C42B1C'], borderWidth: 3, borderColor: '#fff' }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '65%',
+        plugins: { legend: { display: false } },
+        animation: { duration: 900, easing: 'easeOutQuart' }
+      }
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => setTimeout(initCharts, 100));
+</script>
+</body>
+</html>

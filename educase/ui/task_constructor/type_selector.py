@@ -34,14 +34,14 @@ class TypeSelector(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedWidth(240)
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
         
         # Заголовок
         header = QLabel("Тип задания")
         header.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLORS['text_primary']}; padding: 16px;")
-        self.layout.addWidget(header)
+        self.main_layout.addWidget(header)
         
         # Область прокрутки
         self.scroll = QScrollArea()
@@ -96,7 +96,7 @@ class TypeSelector(QWidget):
             
         self.scroll_layout.addStretch()
         self.scroll.setWidget(self.scroll_content)
-        self.layout.addWidget(self.scroll)
+        self.main_layout.addWidget(self.scroll)
 
     def _on_button_toggled(self, btn_id: int, checked: bool):
         if checked:

@@ -98,7 +98,7 @@ class SingleChoiceEditor(AbstractTaskEditor):
         
         # Вставляем блок вариантов сразу после редактора body
         # Layout у base_editor -> layout, позиция: 2 (0=header, 1=body)
-        self.layout.insertWidget(2, self.options_group)
+        self.main_layout.insertWidget(2, self.options_group)
         
         # Добавим два дефолтных варианта
         self._add_empty_option(is_correct=True)

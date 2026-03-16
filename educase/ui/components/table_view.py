@@ -1,7 +1,9 @@
 # ui/components/table_view.py
-from PySide6.QtWidgets import QTableWidget, QHeaderView
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QHeaderView, QTableWidget
+
 from ui.styles.theme import COLORS
+
 
 class TableView(QTableWidget):
     """
@@ -24,9 +26,9 @@ class TableView(QTableWidget):
         header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         header.setStretchLastSection(True)
         header.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        
+
         self.verticalHeader().setVisible(False)
-        
+
         self.setStyleSheet(f"""
             QTableWidget {{
                 background-color: transparent;

@@ -117,7 +117,7 @@ class TextInputEditor(AbstractTaskEditor):
         self.options_layout.addWidget(self.btn_add)
         
         # Вставляем блок вариантов
-        self.layout.insertWidget(2, self.options_group)
+        self.main_layout.insertWidget(2, self.options_group)
         
         # Добавим один пустой вариант
         self._add_empty_answer()

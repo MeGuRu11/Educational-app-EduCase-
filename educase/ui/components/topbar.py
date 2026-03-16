@@ -3,17 +3,16 @@
 Верхняя панель (Topbar) для QStackedWidget.
 Отвечает за drag окна (если MainWindow Frameless), заголовок и дополнительные действия.
 """
-from PySide6.QtCore import Qt, Signal, QPoint
-from PySide6.QtGui import QMouseEvent, QFont, QColor
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QApplication, QWidget
+from PySide6.QtCore import QPoint, Qt, Signal
+from PySide6.QtGui import QFont, QMouseEvent
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QWidget
 
-from ui.styles.icons import get_icon
 from ui.styles.theme import COLORS
 
 
 class Topbar(QFrame):
     """Кастомный TitleBar (Frameless Window) с возможностью перетаскивания."""
-    
+
     # Сигналы для кнопок управления окном
     minimized = Signal()
     maximized = Signal()
@@ -22,13 +21,13 @@ class Topbar(QFrame):
     def __init__(self, main_window_widget: "QWidget"):
         super().__init__()
         self.main_window_widget = main_window_widget # Для перетаскивания всего окна
-        
+
         self.setFixedHeight(56)
         self.setStyleSheet(f"background-color: {COLORS['bg_layer']}; border-bottom: 1px solid {COLORS['stroke_divider']};")
-        
+
         self._drag_start_pos = QPoint()
         self._dragging = False
-        
+
         self._setup_ui()
 
     def _setup_ui(self) -> None:

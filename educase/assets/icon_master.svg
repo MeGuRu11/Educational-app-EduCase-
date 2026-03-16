@@ -1,136 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-  <defs>
+  <!-- START NODE -->
+  <circle cx="128" cy="58" r="22" fill="#005eb0"/>
+  <!-- ECG / pulse line -->
+  <polyline points="112,58 118,58 121,48 124,68 127,54 130,62 133,58 144,58" fill="none" stroke="#5bbfff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
 
-    <!-- Glow filters -->
-    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="5" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <filter id="glow2" x="-80%" y="-80%" width="260%" height="260%">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
+  <!-- DECISION NODE -->
+  <polygon points="128,108 150,129 128,150 106,129" fill="#005eb0"/>
+  <text x="128" y="136" text-anchor="middle" font-size="20" font-weight="bold" fill="#ffffff" font-family="sans-serif">?</text>
 
-    <!-- Background gradient: military-medical deep blue -->
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#002050"/>
-      <stop offset="55%"  stop-color="#005aaf"/>
-      <stop offset="100%" stop-color="#0072d0"/>
-    </linearGradient>
+  <!-- SUCCESS NODE -->
+  <circle cx="196" cy="196" r="18" fill="#107C10"/>
+  <polyline points="187,196 195,204 207,185" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 
-    <!-- Highlight glint (top-left) -->
-    <radialGradient id="glint" cx="35%" cy="25%" r="55%">
-      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.11"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
+  <!-- FAIL NODE -->
+  <circle cx="60" cy="196" r="18" fill="#C42B1C"/>
+  <line x1="53" y1="189" x2="67" y2="203" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="67" y1="189" x2="53" y2="203" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
 
-    <!-- Node fill: dark blue radial -->
-    <radialGradient id="nodeFill" cx="38%" cy="32%" r="70%">
-      <stop offset="0%"   stop-color="#0c3572"/>
-      <stop offset="100%" stop-color="#001d4e"/>
-    </radialGradient>
-
-    <!-- Success node fill: dark green radial -->
-    <radialGradient id="greenFill" cx="38%" cy="32%" r="70%">
-      <stop offset="0%"   stop-color="#0e4a28"/>
-      <stop offset="100%" stop-color="#071d10"/>
-    </radialGradient>
-
-    <!-- Hex pattern tile (30x34) — Qt compatible -->
-    <pattern id="hexPat" x="0" y="0" width="30" height="34" patternUnits="userSpaceOnUse">
-      <path d="M15 2 L28 9.5 L28 24.5 L15 32 L2 24.5 L2 9.5 Z"
-            fill="none" stroke="#ffffff" stroke-opacity="0.033" stroke-width="1"/>
-    </pattern>
-
-    <!-- Rounded square clip -->
-    <clipPath id="iconClip">
-      <rect x="0" y="0" width="256" height="256" rx="46" ry="46"/>
-    </clipPath>
-
-  </defs>
-
-  <!-- ══ BACKGROUND ══ -->
-  <g clip-path="url(#iconClip)">
-
-    <!-- Base gradient -->
-    <rect x="0" y="0" width="256" height="256" fill="url(#bgGrad)"/>
-
-    <!-- Hex texture overlay -->
-    <rect x="0" y="0" width="256" height="256" fill="url(#hexPat)"/>
-
-    <!-- Top-left glint -->
-    <rect x="0" y="0" width="256" height="256" fill="url(#glint)"/>
-
-    <!-- ══ CONNECTOR LINES (drawn before nodes) ══ -->
-
-    <!-- Trunk: START → DECISION (solid, mid-opacity) -->
-    <line x1="128" y1="78" x2="128" y2="114"
-          stroke="#ffffff" stroke-opacity="0.52" stroke-width="4.5" stroke-linecap="round"/>
-
-    <!-- Correct branch: DECISION → SUCCESS (bright, solid) -->
-    <line x1="144" y1="144" x2="188" y2="183"
-          stroke="#ffffff" stroke-opacity="0.85" stroke-width="3.5" stroke-linecap="round"/>
-
-    <!-- Wrong branch: DECISION → FAIL (muted, dashed) -->
-    <line x1="112" y1="144" x2="68" y2="183"
-          stroke="#ffffff" stroke-opacity="0.22" stroke-width="2.5" stroke-linecap="round"
-          stroke-dasharray="7 5"/>
-
-    <!-- ══ START NODE (top-centre, circle with ECG pulse) ══ -->
-
-    <!-- Outer glow ring -->
-    <circle cx="128" cy="58" r="25" fill="#0064c8" fill-opacity="0.13"/>
-    <!-- Main circle -->
-    <circle cx="128" cy="58" r="20"
-            fill="url(#nodeFill)" stroke="#ffffff" stroke-opacity="0.88" stroke-width="2.5"
-            filter="url(#glow)"/>
-    <!-- ECG / pulse line -->
-    <polyline points="112,58 118,58 121,48 124,68 127,54 130,62 133,58 144,58"
-              fill="none" stroke="#5bbfff" stroke-width="2.2"
-              stroke-linecap="round" stroke-linejoin="round"/>
-
-    <!-- ══ DECISION NODE (diamond, middle) ══ -->
-
-    <!-- Diamond shape -->
-    <polygon points="128,108 150,129 128,150 106,129"
-             fill="url(#nodeFill)" stroke="#ffffff" stroke-opacity="0.78" stroke-width="2.5"
-             filter="url(#glow)"/>
-    <!-- Question mark -->
-    <text x="128" y="135" text-anchor="middle"
-          font-size="20" font-weight="700" fill="#ffffff" fill-opacity="0.85"
-          font-family="system-ui, -apple-system, sans-serif">?</text>
-
-    <!-- ══ SUCCESS NODE (bottom-right, green circle + checkmark) ══ -->
-
-    <!-- Outer glow ring -->
-    <circle cx="196" cy="196" r="21" fill="#28be50" fill-opacity="0.12"/>
-    <!-- Main circle -->
-    <circle cx="196" cy="196" r="16"
-            fill="url(#greenFill)" stroke="#50e66e" stroke-opacity="0.85" stroke-width="2.5"
-            filter="url(#glow2)"/>
-    <!-- Checkmark -->
-    <polyline points="187,196 194,203 206,187"
-              fill="none" stroke="#4ee87a" stroke-width="3"
-              stroke-linecap="round" stroke-linejoin="round"/>
-
-    <!-- ══ FAIL NODE (bottom-left, muted circle + X) ══ -->
-
-    <circle cx="60" cy="196" r="14"
-            fill="#081526" stroke="#ffffff" stroke-opacity="0.22" stroke-width="2"/>
-    <!-- X lines -->
-    <line x1="53" y1="189" x2="67" y2="203"
-          stroke="#ffffff" stroke-opacity="0.28" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="67" y1="189" x2="53" y2="203"
-          stroke="#ffffff" stroke-opacity="0.28" stroke-width="2.5" stroke-linecap="round"/>
-
-  </g>
-
-  <!-- Rounded border stroke (sits on top) -->
-  <rect x="0.5" y="0.5" width="255" height="255" rx="45.5" ry="45.5"
-        fill="none" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1"/>
-  <!-- Inner top-edge highlight line -->
-  <rect x="1" y="1" width="254" height="30" rx="45"
-        fill="url(#glint)" opacity="0.6"/>
-
+  <!-- CONNECTOR LINES -->
+  <line x1="128" y1="80" x2="128" y2="108" stroke="#4DA3E8" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="144" y1="144" x2="188" y2="183" stroke="#4ee87a" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="112" y1="144" x2="68" y2="183" stroke="#ff99a4" stroke-width="3" stroke-linecap="round" stroke-dasharray="8 6"/>
 </svg>

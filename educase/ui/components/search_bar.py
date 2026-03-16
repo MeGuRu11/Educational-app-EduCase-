@@ -1,10 +1,10 @@
 # ui/components/search_bar.py
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel
 from PySide6.QtGui import QColor, QPainter, QPainterPath
-from PySide6.QtCore import Qt, QPropertyAnimation, QEasingCurve, Property
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QWidget
 
-from ui.styles.theme import COLORS
 from ui.styles.icons import get_icon
+from ui.styles.theme import COLORS
+
 
 class SearchBar(QWidget):
     """
@@ -14,16 +14,16 @@ class SearchBar(QWidget):
     def __init__(self, placeholder="Поиск...", parent=None):
         super().__init__(parent)
         self.setFixedHeight(36)
-        
+
         layout = QHBoxLayout(self)
         layout.setContentsMargins(12, 0, 12, 0)
         layout.setSpacing(8)
-        
+
         # Icon
         self.icon_lbl = QLabel()
         self.icon_lbl.setStyleSheet("background: transparent;")
         self.icon_lbl.setPixmap(get_icon("search", COLORS["text_secondary"]).pixmap(18, 18))
-        
+
         # Input
         self.input = QLineEdit()
         self.input.setPlaceholderText(placeholder)
@@ -38,10 +38,10 @@ class SearchBar(QWidget):
                 font-size: 14px;
             }}
         """)
-        
+
         layout.addWidget(self.icon_lbl)
         layout.addWidget(self.input)
-        
+
         # Focus effects tracking
         self.input.installEventFilter(self)
         self._is_focused = False
@@ -61,18 +61,18 @@ class SearchBar(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
+
         path = QPainterPath()
         rect = self.rect().adjusted(1, 1, -1, -1)
         radius = (self.height() - 2) / 2.0
         path.addRoundedRect(rect, radius, radius)
-        
+
         p.fillPath(path, QColor(COLORS["bg_elevated"]))
-        
+
         # Border
         if self._is_focused:
             p.setPen(QColor(COLORS["accent"]))
         else:
             p.setPen(QColor(0, 0, 0, 36)) # stroke_control
-            
+
         p.drawPath(path)

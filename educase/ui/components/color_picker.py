@@ -1,6 +1,7 @@
 # ui/components/color_picker.py
 from PySide6.QtWidgets import QColorDialog
 
+
 def open_color_picker(parent=None, initial_color="#0078D4"):
     """
     Открывает стандартный диалог выбора цвета.

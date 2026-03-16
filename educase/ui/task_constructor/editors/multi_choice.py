@@ -93,7 +93,7 @@ class MultiChoiceEditor(AbstractTaskEditor):
         self.options_layout.addWidget(self.btn_add)
         
         # Вставляем блок вариантов сразу после редактора body
-        self.layout.insertWidget(2, self.options_group)
+        self.main_layout.insertWidget(2, self.options_group)
         
         # Добавим два дефолтных варианта
         self._add_empty_option(is_correct=True)

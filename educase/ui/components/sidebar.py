@@ -3,28 +3,26 @@
 Боковая панель навигации (expand/collapse с анимациями).
 Role-aware навигация (показывает разный набор кнопок для ролей).
 """
-from typing import List
 
 from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt, Signal, Slot
 from PySide6.QtGui import QColor, QPainter, QPainterPath
-from PySide6.QtWidgets import QFrame, QVBoxLayout, QPushButton, QLabel, QSpacerItem, QSizePolicy
+from PySide6.QtWidgets import QFrame, QLabel, QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout
 
 from core.event_bus import bus
-from ui.styles.animations import fade_in, fade_out
 from ui.styles.icons import get_icon
-from ui.styles.theme import ANIM, COLORS, RADIUS
+from ui.styles.theme import ANIM, COLORS
 
 
 class NavButton(QPushButton):
     """Кастомная кнопка для Sidebar с иконкой и текстом."""
-    
+
     def __init__(self, icon_name: str, text: str, route: str, is_expanded: bool = True):
         super().__init__()
         self.route = route
         self.icon_name = icon_name
         self.expanded_text = text
         self._is_expanded = is_expanded
-        
+
         # UI Настройка
         self.setCheckable(True)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -49,7 +47,7 @@ class NavButton(QPushButton):
                 background-color: rgba(0,120,212,0.10);
             }
         """)
-        
+
         self.update_state(self._is_expanded)
 
     def paintEvent(self, event) -> None:
@@ -59,7 +57,7 @@ class NavButton(QPushButton):
             p.setRenderHint(QPainter.RenderHint.Antialiasing)
             p.setPen(Qt.PenStyle.NoPen)
             p.setBrush(QColor(COLORS["accent"]))
-            
+
             # Левая синяя полоска-индикатор
             path = QPainterPath()
             path.addRoundedRect(0, 10, 4, self.height() - 20, 2, 2)
@@ -70,7 +68,7 @@ class NavButton(QPushButton):
         self._is_expanded = expanded
         color = COLORS["accent"] if self.isChecked() else COLORS["text_secondary"]
         self.setIcon(get_icon(self.icon_name, color, 24))
-        
+
         if expanded:
             self.setText(f"  {self.expanded_text}")
         else:
@@ -85,11 +83,11 @@ class Sidebar(QFrame):
         self.is_expanded = True
         self.w_expanded = 240
         self.w_collapsed = 72
-        
+
         self.setFixedWidth(self.w_expanded)
         self.setStyleSheet(f"background-color: {COLORS['sidebar_bg']}; border-right: 1px solid {COLORS['stroke_divider']};")
-        
-        self.nav_buttons: List[NavButton] = []
+
+        self.nav_buttons: list[NavButton] = []
         self._setup_ui()
 
     def _setup_ui(self) -> None:
@@ -102,7 +100,7 @@ class Sidebar(QFrame):
         self.profile_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.profile_lbl.setFixedHeight(40)
         self.layout_.addWidget(self.profile_lbl)
-        
+
         self.name_lbl = QLabel("ФИО")
         self.name_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.name_lbl.setStyleSheet(f"color: {COLORS['text_primary']}; font-weight: bold;")
@@ -126,7 +124,7 @@ class Sidebar(QFrame):
         self.btn_toggle = NavButton("chevron_right", "Свернуть", "toggle", self.is_expanded)
         self.btn_toggle.setCheckable(False)
         self.btn_toggle.clicked.connect(self.toggle_size)
-        
+
         self.btn_logout = NavButton("logout", "Выйти", "logout", self.is_expanded)
         self.btn_logout.setCheckable(False)
         self.btn_logout.clicked.connect(lambda: bus.user_logged_out.emit())
@@ -137,7 +135,7 @@ class Sidebar(QFrame):
     def build_navigation(self, role: str) -> None:
         """Перестраивает меню в зависимости от роли."""
         # Очистить старое
-        for i in reversed(range(self.nav_layout.count())): 
+        for i in reversed(range(self.nav_layout.count())):
             widget = self.nav_layout.itemAt(i).widget()
             if widget:
                 widget.deleteLater()
@@ -196,13 +194,13 @@ class Sidebar(QFrame):
         self.anim.setStartValue(self.width())
         self.anim.setEndValue(end_w)
         self.anim.setEasingCurve(QEasingCurve.Type.OutCubic)
-        
+
         self.anim_min = QPropertyAnimation(self, b"minimumWidth", self)
         self.anim_min.setDuration(ANIM["normal"])
         self.anim_min.setStartValue(self.width())
         self.anim_min.setEndValue(end_w)
         self.anim_min.setEasingCurve(QEasingCurve.Type.OutCubic)
-        
+
         self.anim.start()
         self.anim_min.start()
 
@@ -211,6 +209,6 @@ class Sidebar(QFrame):
         self.btn_toggle.update_state(self.is_expanded)
         self.btn_logout.update_state(self.is_expanded)
         self.btn_toggle.expanded_text = "Свернуть" if self.is_expanded else "Развернуть"
-        
+
         for btn in self.nav_buttons:
             btn.update_state(self.is_expanded)

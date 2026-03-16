@@ -14,6 +14,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtGui import QFontDatabase, QIcon
 from PySide6.QtWidgets import QApplication
 
+import app
 from config import _init_dirs
 from core.database import run_migrations
 from core.db_maintenance import run_maintenance
@@ -22,7 +23,6 @@ from core.logger import setup_logger
 from core.thread_pool import run_async
 from ui.styles.stylesheet import generate_stylesheet
 from ui.windows.splash_window import SplashScreen
-import app
 
 
 def main() -> None:
@@ -77,15 +77,32 @@ def main() -> None:
     # 7. Инициализация окон
     login_window = LoginWindow(container)
     main_window = MainWindow(container)
-    
+
     toast_manager.main_window = login_window
+
+    # IdleGuard (Этап 7 - Session Management)
+    from core.event_bus import bus
+    from core.idle_guard import IdleGuard
+
+    idle_guard = IdleGuard()
 
     def _on_login_success() -> None:
         login_window.hide()
         toast_manager.main_window = main_window
+        main_window._on_user_login() # Обновляем UI под роль
         main_window.show()
+        idle_guard.start() # Начинаем отслеживание неактивности
+
+    def _on_logout(*args) -> None:
+        idle_guard.stop()
+        app.current_user = None
+        main_window.hide()
+        toast_manager.main_window = login_window
+        login_window.clear_fields()  # type: ignore
+        login_window.show()
 
     login_window.login_successful.connect(_on_login_success)
+    bus.subscribe("user_logged_out", _on_logout)
 
     # 8. Гарантируем минимум 2500ms показа splash
     elapsed = int((time.monotonic() - t0) * 1000)
@@ -96,6 +113,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    from PySide6.QtCore import Qt
 
     main()

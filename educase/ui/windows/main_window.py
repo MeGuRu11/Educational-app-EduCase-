@@ -4,11 +4,18 @@
 Содержит Sidebar, Topbar и QStackedWidget для переключения экранов.
 Управляется через EventBus (bus.navigate_to).
 """
-from PySide6.QtCore import Qt, Slot
+
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt, Slot
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
-    QWidget, QHBoxLayout, QVBoxLayout, QStackedWidget, 
-    QApplication, QLabel
+    QApplication,
+    QGraphicsOpacityEffect,
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
 )
 
 import app
@@ -16,15 +23,16 @@ from core.di_container import Container
 from core.event_bus import bus
 from ui.components.sidebar import Sidebar
 from ui.components.topbar import Topbar
-from ui.windows.sandbox_view import SandboxView
+from ui.screens.student.case_player import CasePlayer
 from ui.styles.theme import COLORS, RADIUS
+from ui.windows.sandbox_view import SandboxView
 
 
 class MainWindow(QWidget):
     def __init__(self, container: Container):
         super().__init__()
         self.container = container
-        
+
         self.W, self.H = 1280, 800
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Window)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -36,11 +44,16 @@ class MainWindow(QWidget):
 
         self._setup_ui()
         self._center()
-        
+
         # Подписки на события
         bus.navigate_to.connect(self._on_navigate)
         bus.user_logged_in.connect(self._on_user_login)
         bus.start_case.connect(self._on_start_case)
+        bus.subscribe("idle_warning", self._on_idle_warning)
+        bus.subscribe("idle_timeout", self._on_idle_timeout)
+
+        # Диалог предупреждения о неактивности
+        self._idle_dialog: QMessageBox | None = None
 
     def _center(self) -> None:
         screen = QApplication.primaryScreen().geometry()
@@ -95,7 +108,7 @@ class MainWindow(QWidget):
     def _init_screens(self) -> None:
         """Инициализация словаря экранов и добавление их в QStackedWidget."""
         self.screens: dict[str, QWidget] = {}
-        
+
         # Заглушки для первого этапа (реализуются детально позже)
         self.screens["home"] = QLabel("Главная страница (Dashboard)")
         self.screens["cases"] = QLabel("Мои кейсы / Управление кейсами")
@@ -113,7 +126,7 @@ class MainWindow(QWidget):
                 widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 widget.setStyleSheet(f"font-size: 24px; color: {COLORS['text_secondary']};")
             self.content_stack.addWidget(widget)
-            
+
         # Устанавливаем Sandbox по умолчанию при запуске
         self.content_stack.setCurrentWidget(self.screens["sandbox"])
 
@@ -122,10 +135,7 @@ class MainWindow(QWidget):
         if route in self.screens:
             self.content_stack.setCurrentWidget(self.screens[route])
             # Простая анимация появления экрана
-            import PySide6.QtWidgets as QtWidgets
-            from PySide6.QtCore import QPropertyAnimation, QEasingCurve
-            
-            effect = QtWidgets.QGraphicsOpacityEffect(self.screens[route])
+            effect = QGraphicsOpacityEffect(self.screens[route])
             self.screens[route].setGraphicsEffect(effect)
             self.anim = QPropertyAnimation(effect, b"opacity")
             self.anim.setDuration(250)
@@ -136,7 +146,7 @@ class MainWindow(QWidget):
 
             # Обновление заголовка
             titles = {
-                "home": "Главная", "cases": "Мои кейсы", "results": "Мои результаты", 
+                "home": "Главная", "cases": "Мои кейсы", "results": "Мои результаты",
                 "profile": "Профиль", "groups": "Группы", "analytics": "Аналитика",
                 "users": "Пользователи", "system": "Настройки", "logs": "Логи",
                 "sandbox": "UI Песочница"
@@ -148,33 +158,51 @@ class MainWindow(QWidget):
         user = app.current_user
         if not user:
             return
-            
+
         role = user.role.name
-        
+
+        # Удаляем старые экраны из стека
+        for key in list(self.screens.keys()):
+            if key != "sandbox":
+                self.content_stack.removeWidget(self.screens[key])
+                self.screens[key].deleteLater()
+                del self.screens[key]
+
         # Подгрузка реальных экранов в зависимости от роли
         if role == "student":
-            from ui.screens.student.dashboard import StudentDashboard
-            from ui.screens.student.my_cases import MyCasesScreen
-            from ui.screens.student.my_results import MyResultsScreen
-            from ui.screens.student.profile import StudentProfileScreen
-            
-            # Удаляем заглушки
-            for key in ["home", "cases", "results", "profile"]:
-                if key in self.screens:
-                    self.content_stack.removeWidget(self.screens[key])
-                    self.screens[key].deleteLater()
-                    
-            self.screens["home"] = StudentDashboard(self.container)
-            self.screens["cases"] = MyCasesScreen(self.container)
-            self.screens["results"] = MyResultsScreen(self.container)
-            self.screens["profile"] = StudentProfileScreen(self.container)
-            
-            for key in ["home", "cases", "results", "profile"]:
-                self.content_stack.addWidget(self.screens[key])
-            
+            from ui.windows.student_dashboard import StudentDashboard
+            from ui.windows.student_results import StudentResults
+
+            self.screens["home"] = StudentDashboard(self)
+            self.screens["results"] = StudentResults(self)
+            # Оставим заглушки для остальных
+            self.screens["cases"] = QLabel("Мои кейсы (В разработке)")
+            self.screens["profile"] = QLabel("Профиль (В разработке)")
+
+        elif role == "teacher":
+            from ui.windows.teacher_analytics import TeacherAnalytics
+            from ui.windows.teacher_dashboard import TeacherDashboard
+            from ui.windows.teacher_groups import TeacherGroups
+
+            self.screens["home"] = TeacherDashboard(self)
+            self.screens["analytics"] = TeacherAnalytics(self)
+            self.screens["groups"] = TeacherGroups(self)
+            # Оставим заглушки для остальных
+            self.screens["cases"] = QLabel("Управление кейсами (В разработке)")
+            self.screens["users"] = QLabel("Пользователи (В разработке)")
+            self.screens["profile"] = QLabel("Профиль (В разработке)")
+
+        # Устанавливаем новые
+        for key, w in self.screens.items():
+            if key != "sandbox":
+                self.content_stack.addWidget(w)
+
         # Настройка сайдбара под роль
         self.sidebar.name_lbl.setText(user.full_name)
         self.sidebar.build_navigation(role)
+
+        # Переключаемся на home
+        self._on_navigate("home", {})
 
     @Slot()
     def toggle_maximize(self) -> None:
@@ -189,14 +217,12 @@ class MainWindow(QWidget):
 
     @Slot(int)
     def _on_start_case(self, case_id: int) -> None:
-        from ui.screens.student.case_player import CasePlayer
-        import app
-        
+
         # 1. Загружаем данные кейса
         case = self.container.case_service.get_case(case_id)
         if not case:
             return
-            
+
         # 2. Формируем структуру данных (mock) так как пока нет полноценного редактора заданий
         case_data = {
             "name": case.title,
@@ -218,13 +244,50 @@ class MainWindow(QWidget):
                 }
             ]
         }
-        
+
         # CasePlayer modal window (передаём case_data и attempt_service)
         player = CasePlayer(case_data, self.container.attempt_service, attempt_id=1, parent=self)
         player.exec()
-        
+
         # Обновить дашборд / результаты после закрытия плеера
         if "home" in self.screens and hasattr(self.screens["home"], "presenter"):
             self.screens["home"].presenter.load_data()
         if "results" in self.screens and hasattr(self.screens["results"], "presenter"):
             self.screens["results"].presenter.load_results()
+
+    @Slot(int)
+    def _on_idle_warning(self, seconds_left: int) -> None:
+        """Показывает предупреждение перед авто-логаутом."""
+        if not self._idle_dialog:
+            self._idle_dialog = QMessageBox(self)
+            self._idle_dialog.setWindowTitle("Неактивность")
+            self._idle_dialog.setIcon(QMessageBox.Icon.Warning)
+            # В реальном приложении текст будет обновляться таймером,
+            # но здесь мы просто показываем диалог.
+            self._idle_dialog.setText(
+                "Через некоторое время сессия будет завершена из-за неактивности.\n"
+                "Нажмите 'Я здесь', чтобы продолжить работу."
+            )
+
+            btn_stay = self._idle_dialog.addButton("Я здесь", QMessageBox.ButtonRole.AcceptRole)
+            self._idle_dialog.addButton("Выйти", QMessageBox.ButtonRole.RejectRole)
+
+            def on_dialog_closed():
+                clicked_btn = self._idle_dialog.clickedButton()
+                if clicked_btn == btn_stay:
+                    # Сбрасываем таймер в IdleGuard (через имитацию события или напрямую)
+                    # Так как мы не имеем прямой ссылки на IdleGuard, просто сбросим его через фокус
+                    self.setFocus()
+                else:
+                    bus.trigger("user_logged_out")
+                self._idle_dialog = None
+
+            self._idle_dialog.finished.connect(on_dialog_closed)
+            self._idle_dialog.show()
+
+    @Slot()
+    def _on_idle_timeout(self, *args) -> None:
+        """Принудительно разлогинивает пользователя."""
+        if self._idle_dialog:
+            self._idle_dialog.close()
+        bus.trigger("user_logged_out")
