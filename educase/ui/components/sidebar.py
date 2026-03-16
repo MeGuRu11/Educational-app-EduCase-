@@ -45,23 +45,11 @@ class NavButton(QPushButton):
                 color: #0078D4;
                 font-weight: 600;
                 background-color: rgba(0,120,212,0.10);
+                border-left: 4px solid #0078D4;
             }
         """)
 
         self.update_state(self._is_expanded)
-
-    def paintEvent(self, event) -> None:
-        super().paintEvent(event)
-        if self.isChecked():
-            p = QPainter(self)
-            p.setRenderHint(QPainter.RenderHint.Antialiasing)
-            p.setPen(Qt.PenStyle.NoPen)
-            p.setBrush(QColor(COLORS["accent"]))
-
-            # Левая синяя полоска-индикатор
-            path = QPainterPath()
-            path.addRoundedRect(0, 10, 4, self.height() - 20, 2, 2)
-            p.drawPath(path)
 
     def update_state(self, expanded: bool) -> None:
         """Переключатель Expanded/Collapsed (показываем/скрываем текст)."""
@@ -155,7 +143,7 @@ class Sidebar(QFrame):
                 ("home", "Главная", "home"),
                 ("cases", "Управление кейсами", "book"),
                 ("groups", "Группы", "users"),
-                ("analytics", "Аналитика", "chart"),
+                ("analytics", "Аналитика", "analytics"),
                 ("profile", "Профиль", "profile"),
             ]
         elif role == "admin":
@@ -164,7 +152,6 @@ class Sidebar(QFrame):
                 ("users", "Пользователи", "users"),
                 ("system", "Система", "settings"),
                 ("logs", "Логи", "document"),
-                ("sandbox", "UI Песочница", "document"),
                 ("profile", "Профиль", "profile"),
             ]
 

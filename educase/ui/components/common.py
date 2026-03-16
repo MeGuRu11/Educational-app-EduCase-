@@ -62,44 +62,41 @@ class SectionLabel(QWidget):
 
 
 class HoverCardFrame(CardFrame):
-    """Карточка, которая приподнимается при наведении курсора (StatCard, GroupCard)."""
+    """Карточка с эффектом при наведении (через CSS для стабильности)."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._base_y = 0
-        self._is_ready = False
-
-    def showEvent(self, event):
-        super().showEvent(event)
-        self._base_y = self.y()
-        self._is_ready = True
+        self._is_hovered = False
+        
+        # Убираем тень, которая вызывает конфликты QPainter
+        self.setGraphicsEffect(None)
+        self.update_style()
 
     def enterEvent(self, event):
         super().enterEvent(event)
-        if not self._is_ready:
-            return
-
-        from PySide6.QtCore import QEasingCurve, QPoint, QPropertyAnimation
-        anim = QPropertyAnimation(self, b"pos", self)
-        anim.setDuration(180)
-        anim.setEasingCurve(QEasingCurve.Type.OutCubic)
-        anim.setEndValue(QPoint(self.x(), self._base_y - 2))
-        anim.start()
-        # Сохраняем ссылку на анимацию
-        self._anim = anim
+        self._is_hovered = True
+        self.update_style()
 
     def leaveEvent(self, event):
         super().leaveEvent(event)
-        if not self._is_ready:
-            return
+        self._is_hovered = False
+        self.update_style()
 
-        from PySide6.QtCore import QEasingCurve, QPoint, QPropertyAnimation
-        anim = QPropertyAnimation(self, b"pos", self)
-        anim.setDuration(180)
-        anim.setEasingCurve(QEasingCurve.Type.OutCubic)
-        anim.setEndValue(QPoint(self.x(), self._base_y))
-        anim.start()
-        self._anim = anim
+    def update_style(self):
+        bg = COLORS["card"]
+        border = COLORS["border"]
+        if self._is_hovered:
+            # Слегка подсвечиваем фон или усиливаем границу
+            bg = "#F9FAFB" # Слегка светлее/другой оттенок
+            border = COLORS["accent"]
+            
+        self.setStyleSheet(f"""
+            #CardFrame {{
+                background-color: {bg};
+                border-radius: {RADIUS["card"]}px;
+                border: 1px solid {border};
+            }}
+        """)
 
 
 class ScorePill(QLabel):
@@ -154,3 +151,28 @@ class GradeBadge(QLabel):
                 font-weight: 800;
             }}
         """)
+
+class PlaceholderScreen(QWidget):
+    """Заглушка для проектируемых разделов."""
+    def __init__(self, title: str, parent=None):
+        super().__init__(parent)
+        layout = QVBoxLayout(self)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        icon = QLabel("🚧")
+        icon.setStyleSheet("font-size: 64px;")
+        icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        lbl = QLabel(title)
+        lbl.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {COLORS['t1']};")
+        lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        sub = QLabel("Этот раздел находится в стадии разработки.\nСкоро здесь будет потрясающий функционал!")
+        sub.setStyleSheet(f"color: {COLORS['t2']}; font-size: 14px;")
+        sub.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        layout.addStretch()
+        layout.addWidget(icon)
+        layout.addWidget(lbl)
+        layout.addWidget(sub)
+        layout.addStretch()

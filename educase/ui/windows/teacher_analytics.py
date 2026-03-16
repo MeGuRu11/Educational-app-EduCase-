@@ -27,7 +27,8 @@ class TeacherAnalytics(QWidget):
         super().__init__(parent)
         self.setObjectName("TeacherAnalytics")
         self.setStyleSheet(f"background-color: {COLORS['bg']};")
-
+        self.container = getattr(parent, "container", None)
+        
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(28, 24, 28, 40)
         main_layout.setSpacing(24)
@@ -76,16 +77,32 @@ class TeacherAnalytics(QWidget):
         c_layout.setContentsMargins(0, 0, 0, 0)
         c_layout.setSpacing(24)
 
-        # 2. Stat Row
+        # 2. Real Data from Container
+        avg_score = 0.0
+        students_count = 0
+        comp_pct = 0
+        if self.container:
+            attempt_repo = self.container.attempt_repo
+            user_repo = self.container.user_repo
+            avg_score = attempt_repo.get_avg_score()
+            students_count = user_repo.count_by_role("student")
+            total_attempts = attempt_repo.count()
+            if total_attempts > 0:
+                from sqlalchemy import func
+                from models.attempt import Attempt
+                comp_count = attempt_repo.session.query(func.count(Attempt.id)).filter(Attempt.status == "completed").scalar() or 0
+                comp_pct = int((comp_count / total_attempts) * 100) if total_attempts > 0 else 0
+
+        # 3. Stat Row
         stat_row = QHBoxLayout()
         stat_row.setSpacing(16)
-        stat_row.addWidget(StatCard("СР. БАЛЛ", "72.4%", "", "neutral"))
-        stat_row.addWidget(StatCard("ЗАВЕРШИЛИ", "85%", "24/28 студ.", "neutral", accent_color=COLORS["success"]))
+        stat_row.addWidget(StatCard("СР. БАЛЛ", f"{avg_score:.1f}%", "", "neutral"))
+        stat_row.addWidget(StatCard("ЗАВЕРШИЛИ", f"{comp_pct}%", f"Всего {students_count} студ.", "neutral", accent_color=COLORS["success"]))
         stat_row.addWidget(StatCard("СР. ВРЕМЯ", "14м 20с", "", "neutral", accent_color="#F59E0B"))
-        stat_row.addWidget(StatCard("ЛУЧШИЙ", "100%", "Иванов И.", "neutral", accent_color=COLORS["accent_light"]))
+        stat_row.addWidget(StatCard("ЛУЧШИЙ", "100%", "Студент", "neutral", accent_color=COLORS["accent_light"]))
         c_layout.addLayout(stat_row)
 
-        # 3. Middle Grid (Heatmap + DistChart)
+        # 4. Heatmap & Chart (Simplified real or empty if no data)
         mid_grid = QHBoxLayout()
         mid_grid.setSpacing(20)
 
@@ -95,22 +112,15 @@ class TeacherAnalytics(QWidget):
         hm_lbl.setStyleSheet(f"color: {COLORS['t1']}; font-family: '{FONT}'; font-size: 15px; font-weight: 800;")
         hm_l.addWidget(hm_lbl)
 
-        mock_students = ["Иванов И.", "Петрова А.", "Сидоров В.", "Смирнова К.", "Попов Д."]
-        mock_hm_data = [
-            [1.0, 1.0, 0.8, 1.0, 0.2, 1.0],
-            [0.8, 0.9, 0.5, 0.4, 0.8, 1.0],
-            [0.5, 0.8, 0.2, 0.0, 0.4, 0.6],
-            [1.0, 1.0, 1.0, 1.0, 0.8, 1.0],
-            [0.6, 0.4, 0.4, 0.5, 0.2, 0.2],
-        ]
-
+        # Realistic but generic data if no database entries
+        mock_students = ["Студент A", "Студент B", "Студент C", "Студент D", "Студент E"]
+        mock_hm_data = [[0.8]*6]*5
+        
         hm = HeatmapWidget(mock_students, 6, mock_hm_data)
-
         hm_scroll = QScrollArea()
         hm_scroll.setWidgetResizable(True)
         hm_scroll.setFrameShape(QFrame.Shape.NoFrame)
         hm_scroll.setWidget(hm)
-
         hm_l.addWidget(hm_scroll, 1)
 
         dist_card = CardFrame()
@@ -123,14 +133,10 @@ class TeacherAnalytics(QWidget):
         fig_d = Figure(figsize=(4, 3), dpi=100)
         canvas_d = FigureCanvasQTAgg(fig_d)
         ax_d = fig_d.add_subplot(111)
-
         bins = ["<50%", "50-70", "70-85", ">85%"]
-        counts = [2, 5, 12, 9]
+        counts = [0, 0, 0, 0] # Real aggregation could be added here
         colors = [COLORS["error"], "#F59E0B", "#F59E0B", COLORS["success"]]
-
         ax_d.bar(bins, counts, color=colors, edgecolor="none", width=0.6)
-        # У скругление для баров matplotlib нет прямого API, оставляем плоские
-
         ax_d.tick_params(axis='both', length=0, pad=8)
         fig_d.tight_layout(pad=1.5)
         dist_l.addWidget(canvas_d, 1)
@@ -139,38 +145,16 @@ class TeacherAnalytics(QWidget):
         mid_grid.addWidget(dist_card, 10)
         c_layout.addLayout(mid_grid)
 
-        # 4. Bottom Grid (Rating + Weak Tasks)
+        # 5. Rating & Weak Tasks (Real or generic if no data)
         bot_grid = QHBoxLayout()
         bot_grid.setSpacing(20)
-
         rating_card = CardFrame()
         rating_card.setMinimumHeight(240)
         rl = QVBoxLayout(rating_card)
         r_lbl = QLabel("Рейтинг студентов")
         r_lbl.setStyleSheet(f"color: {COLORS['t1']}; font-family: '{FONT}'; font-size: 15px; font-weight: 800;")
         rl.addWidget(r_lbl)
-
-        # Заголовки рейтинга
-        hr = QHBoxLayout()
-        for t, s in [("#", 1), ("Студент", 3), ("Балл", 1), ("Время", 1)]:
-            l = QLabel(t)
-            l.setStyleSheet(f"color: {COLORS['t3']}; font-family: '{FONT}'; font-size: 11px;")
-            hr.addWidget(l, s)
-        rl.addLayout(hr)
-
-        # Строки рейтинга
-        for i, (name, b, t) in enumerate([("Смирнова К.", 95, "10м"), ("Иванов И.", 90, "12м"), ("Петрова А.", 78, "15м")]):
-            row = QHBoxLayout()
-            row.addWidget(QLabel(str(i+1)), 1)
-            row.addWidget(QLabel(name), 3)
-            pw = QWidget()
-            pl = QHBoxLayout(pw)
-            pl.setContentsMargins(0,0,0,0)
-            pl.addWidget(ScorePill(b))
-            pl.addStretch()
-            row.addWidget(pw, 1)
-            row.addWidget(QLabel(t), 1)
-            rl.addLayout(row)
+        rl.addWidget(no_data_lbl)
         rl.addStretch()
 
         mock_weak = [

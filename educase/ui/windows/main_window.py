@@ -5,6 +5,7 @@
 Управляется через EventBus (bus.navigate_to).
 """
 
+from typing import Any, cast
 from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt, Slot
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
@@ -21,9 +22,11 @@ from PySide6.QtWidgets import (
 import app
 from core.di_container import Container
 from core.event_bus import bus
+from ui.components.common import PlaceholderScreen
 from ui.components.sidebar import Sidebar
 from ui.components.topbar import Topbar
 from ui.screens.student.case_player import CasePlayer
+from ui.screens.student.my_results import MyResultsScreen
 from ui.styles.theme import COLORS, RADIUS
 from ui.windows.sandbox_view import SandboxView
 
@@ -119,7 +122,7 @@ class MainWindow(QWidget):
         self.screens["users"] = QLabel("Управление пользователями")
         self.screens["system"] = QLabel("Системные настройки")
         self.screens["logs"] = QLabel("Логи системы")
-        self.screens["sandbox"] = SandboxView(self)
+        # self.screens["sandbox"] = SandboxView(self)
 
         for key, widget in self.screens.items():
             if isinstance(widget, QLabel):
@@ -127,8 +130,8 @@ class MainWindow(QWidget):
                 widget.setStyleSheet(f"font-size: 24px; color: {COLORS['text_secondary']};")
             self.content_stack.addWidget(widget)
 
-        # Устанавливаем Sandbox по умолчанию при запуске
-        self.content_stack.setCurrentWidget(self.screens["sandbox"])
+        # Устанавливаем home по умолчанию при наличии
+        self.content_stack.setCurrentIndex(0)
 
     @Slot(str, dict)
     def _on_navigate(self, route: str, params: dict) -> None:
@@ -142,14 +145,14 @@ class MainWindow(QWidget):
             self.anim.setStartValue(0.0)
             self.anim.setEndValue(1.0)
             self.anim.setEasingCurve(QEasingCurve.Type.InOutSine)
+            self.anim.finished.connect(lambda: self.screens[route].setGraphicsEffect(cast(Any, None)))
             self.anim.start()
 
             # Обновление заголовка
             titles = {
                 "home": "Главная", "cases": "Мои кейсы", "results": "Мои результаты",
                 "profile": "Профиль", "groups": "Группы", "analytics": "Аналитика",
-                "users": "Пользователи", "system": "Настройки", "logs": "Логи",
-                "sandbox": "UI Песочница"
+                "users": "Пользователи", "system": "Настройки", "logs": "Логи"
             }
             self.topbar.set_title(titles.get(route, route.capitalize()))
 
@@ -170,27 +173,41 @@ class MainWindow(QWidget):
 
         # Подгрузка реальных экранов в зависимости от роли
         if role == "student":
-            from ui.windows.student_dashboard import StudentDashboard
-            from ui.windows.student_results import StudentResults
-
+            from ui.screens.student.dashboard import StudentDashboard
+            from ui.screens.student.my_results import MyResultsScreen
+            from ui.screens.student.my_cases import MyCasesScreen
+            from ui.screens.student.profile import StudentProfileScreen
             self.screens["home"] = StudentDashboard(self)
-            self.screens["results"] = StudentResults(self)
-            # Оставим заглушки для остальных
-            self.screens["cases"] = QLabel("Мои кейсы (В разработке)")
-            self.screens["profile"] = QLabel("Профиль (В разработке)")
+            self.screens["results"] = MyResultsScreen(self.container)
+            self.screens["cases"] = MyCasesScreen(self.container)
+            self.screens["profile"] = StudentProfileScreen(self.container)
 
         elif role == "teacher":
             from ui.windows.teacher_analytics import TeacherAnalytics
-            from ui.windows.teacher_dashboard import TeacherDashboard
+            from ui.screens.teacher.dashboard import TeacherDashboard
             from ui.windows.teacher_groups import TeacherGroups
+            from ui.screens.student.profile import StudentProfileScreen
 
             self.screens["home"] = TeacherDashboard(self)
             self.screens["analytics"] = TeacherAnalytics(self)
             self.screens["groups"] = TeacherGroups(self)
-            # Оставим заглушки для остальных
-            self.screens["cases"] = QLabel("Управление кейсами (В разработке)")
-            self.screens["users"] = QLabel("Пользователи (В разработке)")
-            self.screens["profile"] = QLabel("Профиль (В разработке)")
+            self.screens["cases"] = PlaceholderScreen("Управление кейсами", self)
+            self.screens["profile"] = StudentProfileScreen(self.container)
+            self.screens["users"] = PlaceholderScreen("Пользователи", self)
+
+        elif role == "admin":
+            from ui.screens.admin.dashboard import AdminDashboard
+            from ui.screens.admin.users import UsersScreen
+            from ui.screens.admin.system import SystemSettingsScreen
+            from ui.screens.admin.logs import LogsScreen
+            from ui.screens.student.profile import StudentProfileScreen
+            self.screens["home"] = AdminDashboard(self)
+            self.screens["users"] = UsersScreen(self)
+            self.screens["system"] = SystemSettingsScreen(self.container)
+            self.screens["logs"] = LogsScreen(self.container)
+            self.screens["profile"] = StudentProfileScreen(self.container)
+            self.screens["cases"] = QLabel("Управление кейсами (Admin)")
+            self.screens["analytics"] = QLabel("Общая аналитика (Admin)")
 
         # Устанавливаем новые
         for key, w in self.screens.items():
