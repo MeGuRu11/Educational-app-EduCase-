@@ -42,37 +42,28 @@ class SearchBar(QWidget):
         layout.addWidget(self.icon_lbl)
         layout.addWidget(self.input)
 
-        # Focus effects tracking
-        self.input.installEventFilter(self)
         self._is_focused = False
+        self.input.installEventFilter(self)
+        self.update_style()
 
     def eventFilter(self, obj, event):
         if obj == self.input:
             if event.type() == event.Type.FocusIn:
                 self._is_focused = True
                 self.icon_lbl.setPixmap(get_icon("search", COLORS["accent"]).pixmap(18, 18))
-                self.update()
+                self.update_style()
             elif event.type() == event.Type.FocusOut:
                 self._is_focused = False
                 self.icon_lbl.setPixmap(get_icon("search", COLORS["text_secondary"]).pixmap(18, 18))
-                self.update()
+                self.update_style()
         return super().eventFilter(obj, event)
 
-    def paintEvent(self, event):
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        path = QPainterPath()
-        rect = self.rect().adjusted(1, 1, -1, -1)
-        radius = (self.height() - 2) / 2.0
-        path.addRoundedRect(rect, radius, radius)
-
-        p.fillPath(path, QColor(COLORS["bg_elevated"]))
-
-        # Border
-        if self._is_focused:
-            p.setPen(QColor(COLORS["accent"]))
-        else:
-            p.setPen(QColor(0, 0, 0, 36)) # stroke_control
-
-        p.drawPath(path)
+    def update_style(self):
+        border_color = COLORS["accent"] if self._is_focused else "rgba(0, 0, 0, 0.14)"
+        self.setStyleSheet(f"""
+            SearchBar {{
+                background-color: {COLORS["bg_elevated"]};
+                border: 1px solid {border_color};
+                border-radius: 18px;
+            }}
+        """)

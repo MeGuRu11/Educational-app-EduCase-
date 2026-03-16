@@ -19,6 +19,11 @@ class UserRepository(BaseRepository[User]):
         stmt = select(User).options(joinedload(User.role)).where(User.username == username)
         return self.session.execute(stmt).scalar_one_or_none()
 
+    def count_by_role(self, role_name: str) -> int:
+        from sqlalchemy import func
+        stmt = select(func.count(User.id)).join(User.role).where(Role.name == role_name)
+        return self.session.execute(stmt).scalar() or 0
+
 
 class RoleRepository(BaseRepository[Role]):
     def __init__(self, session: Session):

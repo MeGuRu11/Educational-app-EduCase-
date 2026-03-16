@@ -63,19 +63,32 @@ class TeacherGroups(QWidget):
         groups_grid = QGridLayout()
         groups_grid.setSpacing(20)
 
-        mock_g1 = {"title": "ЛД-401", "subtitle": "Лечебное дело, 4 курс", "icon": "🏥",
-                   "cases": ["Пневмония", "Анемия"], "stats": {"students": 24, "cases": 2, "avg_score": 75}}
-        mock_g2 = {"title": "ПЕД-502", "subtitle": "Педиатрия, 5 курс", "icon": "👶",
-                   "cases": ["Пневмония"], "stats": {"students": 18, "cases": 1, "avg_score": 82}}
-        mock_g3 = {"title": "ЛД-403", "subtitle": "Лечебное дело, 4 курс", "icon": "🏥",
-                   "cases": ["Пневмония", "Анемия", "ОКС"], "stats": {"students": 25, "cases": 3, "avg_score": 62}}
-        mock_g4 = {"title": "СТОМ-201", "subtitle": "Стоматология, 2 курс", "icon": "🦷",
-                   "cases": ["Неотложная помощь"], "stats": {"students": 30, "cases": 1, "avg_score": 58}}
-
-        groups_grid.addWidget(GroupCard(mock_g1), 0, 0)
-        groups_grid.addWidget(GroupCard(mock_g2), 0, 1)
-        groups_grid.addWidget(GroupCard(mock_g3), 0, 2)
-        groups_grid.addWidget(GroupCard(mock_g4), 1, 0)
+        # Real groups from repository
+        if self.parent() and hasattr(self.parent(), "container"):
+            container = self.parent().container
+            group_repo = container.group_repo
+            groups = group_repo.get_all()
+            
+            if not groups:
+                no_groups = QLabel("Группы не созданы")
+                no_groups.setStyleSheet(f"color: {COLORS['t2']}; font-size: 14px;")
+                groups_grid.addWidget(no_groups, 0, 0)
+            else:
+                for i, g in enumerate(groups):
+                    # Превращаем модель Group в формат для GroupCard
+                    # Т.к. модель Group может не иметь всех полей для отображения, делаем адаптер
+                    g_data = {
+                        "title": g.name,
+                        "subtitle": f"Группа #{g.id}",
+                        "icon": "🏥",
+                        "cases": [], # Временно пусто
+                        "stats": {"students": 0, "cases": 0, "avg_score": 0}
+                    }
+                    card = GroupCard(g_data)
+                    groups_grid.addWidget(card, i // 3, i % 3)
+        else:
+            no_data = QLabel("Данные недоступны")
+            groups_grid.addWidget(no_data, 0, 0)
 
         c_layout.addLayout(groups_grid)
         scroll.setWidget(content)

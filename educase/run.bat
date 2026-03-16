@@ -2,12 +2,12 @@
 cd /d %~dp0
 
 :: 1. Проверка виртуального окружения
-if not exist "..\.venv\Scripts\activate.bat" (
-    echo [EduCase] Virtual environment not found. Please create one at ..\.venv
+if not exist "venv\Scripts\activate.bat" (
+    echo [EduCase] Virtual environment not found. Please create one at venv
     pause
     exit /b
 )
-call ..\.venv\Scripts\activate
+call venv\Scripts\activate
 
 :: 2. Установка зависимостей (тихая установка, обновит если нужно)
 echo [EduCase] Checking/installing dependencies...

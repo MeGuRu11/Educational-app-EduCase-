@@ -2,7 +2,7 @@
 """
 Generic репозиторий для базовых CRUD-операций с моделями SQLAlchemy.
 """
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Any, cast
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
@@ -25,6 +25,11 @@ class BaseRepository(Generic[ModelType]):
         stmt = select(self.model).offset(skip).limit(limit)
         return list(self.session.execute(stmt).scalars().all())
 
+    def count(self) -> int:
+        from sqlalchemy import func
+        stmt = select(func.count()).select_from(self.model)
+        return self.session.execute(stmt).scalar() or 0
+
     def add(self, obj: ModelType) -> ModelType:
         self.session.add(obj)
         self.session.commit()
@@ -46,9 +51,8 @@ class BaseRepository(Generic[ModelType]):
         return obj
 
     def delete(self, id: int) -> bool:
-        from typing import Any, cast
         model_any = cast(Any, self.model)
         stmt = delete(self.model).where(model_any.id == id)
-        result = self.session.execute(stmt)
+        result = cast(Any, self.session.execute(stmt))
         self.session.commit()
-        return result.rowcount > 0
+        return result.rowcount > 0 # type: ignore

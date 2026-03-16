@@ -5,31 +5,31 @@
 
 COLORS = {
     # Акцент
-    "accent":        "#0078D4",
-    "accent_hover":  "#006CBD",
-    "accent_light":  "#4DA3E8",
-    "accent_dark":   "#005A9E",
+    "accent":        "#4F46E5",   # Modern Indigo
+    "accent_hover":  "#4338CA",
+    "accent_light":  "#818CF8",
+    "accent_dark":   "#3730A3",
     # Семантика
-    "success":       "#107C10",
-    "success_bg":    "#DFF6DD",
-    "warning":       "#9D5D00",
-    "warning_bg":    "#FFF4CE",
-    "error":         "#C42B1C",
-    "error_bg":      "#FDE7E9",
+    "success":       "#10B981",   # Emerald
+    "success_bg":    "#ECFDF5",
+    "warning":       "#F59E0B",   # Amber
+    "warning_bg":    "#FFFBEB",
+    "error":         "#EF4444",   # Rose/Red
+    "error_bg":      "#FEF2F2",
     # Фоны
-    "bg":            "#F0F2F5",   # основной фон страниц
-    "card":          "#FFFFFF",   # фон карточек
-    "sidebar":       "#0D1B2E",   # фон сайдбара
+    "bg":            "#F8FAFC",   # Slate 50
+    "card":          "#FFFFFF",   
+    "sidebar":       "#0F172A",   # Slate 900
     # Текст
-    "t1":            "#1A1A2E",   # основной текст
-    "t2":            "#5A6478",   # вторичный
-    "t3":            "#9BA3B4",   # третичный / метки
-    # Тени (передавать как stylesheet box-shadow или рисовать через QGraphicsDropShadow)
-    "shadow_sm":     "0 1px 3px rgba(0,0,0,.06)",
-    "shadow_md":     "0 4px 16px rgba(0,0,0,.08)",
-    "shadow_lg":     "0 12px 40px rgba(0,0,0,.12)",
+    "t1":            "#1E293B",   # Slate 800
+    "t2":            "#475569",   # Slate 600
+    "t3":            "#94A3B8",   # Slate 400
+    # Тени
+    "shadow_sm":     "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+    "shadow_md":     "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    "shadow_lg":     "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
     # Граница
-    "border":        "rgba(0,0,0,0.07)",
+    "border":        "#E2E8F0",   # Slate 200
 }
 
 RADIUS = {

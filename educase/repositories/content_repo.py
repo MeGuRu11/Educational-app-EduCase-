@@ -39,3 +39,8 @@ class CaseRepository(BaseRepository[Case]):
         stmt = select(Case).where(Case.is_published == True).order_by(Case.id.desc())
         return list(self.session.scalars(stmt).all())
 
+    def count_published(self) -> int:
+        from sqlalchemy import func
+        stmt = select(func.count(Case.id)).where(Case.is_published == True)
+        return self.session.execute(stmt).scalar() or 0
+

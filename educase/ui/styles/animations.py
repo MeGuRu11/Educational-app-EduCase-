@@ -6,7 +6,7 @@
 """
 from __future__ import annotations
 
-from typing import Callable
+from typing import Any, Callable, cast
 
 from PySide6.QtCore import (
     QEasingCurve,
@@ -33,6 +33,7 @@ def fade_in(widget: QWidget, duration: int = ANIM["normal"]) -> QPropertyAnimati
     anim.setStartValue(0.0)
     anim.setEndValue(1.0)
     anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+    anim.finished.connect(lambda: widget.setGraphicsEffect(cast(Any, None)))
     anim.start()
     widget.setProperty("_fade_anim", anim)  # prevent GC
     return anim
@@ -50,9 +51,14 @@ def fade_out(
     anim.setDuration(duration)
     anim.setStartValue(1.0)
     anim.setEndValue(0.0)
-    anim.setEasingCurve(QEasingCurve.InCubic)
-    if on_done:
-        anim.finished.connect(on_done)
+    anim.setEasingCurve(cast(Any, QEasingCurve.Type.InCubic))
+    
+    def cleanup():
+        widget.setGraphicsEffect(cast(Any, None))
+        if on_done:
+            on_done()
+
+    anim.finished.connect(cleanup)
     anim.start()
     widget.setProperty("_fade_anim", anim)
     return anim
@@ -76,7 +82,7 @@ def slide_up(
     anim_pos.setDuration(duration)
     anim_pos.setStartValue(QPoint(start_pos.x(), start_pos.y() + offset))
     anim_pos.setEndValue(start_pos)
-    anim_pos.setEasingCurve(QEasingCurve.OutExpo)
+    anim_pos.setEasingCurve(cast(Any, QEasingCurve.Type.OutExpo))
     group.addAnimation(anim_pos)
 
     # Opacity
@@ -87,6 +93,7 @@ def slide_up(
     anim_op.setEasingCurve(QEasingCurve.Type.OutCubic)
     group.addAnimation(anim_op)
 
+    group.finished.connect(lambda: widget.setGraphicsEffect(cast(Any, None)))
     group.start()
     widget.setProperty("_slide_anim", group)
     return group
@@ -119,6 +126,7 @@ def slide_from_right(
     anim_op.setEasingCurve(QEasingCurve.Type.OutCubic)
     group.addAnimation(anim_op)
 
+    group.finished.connect(lambda: widget.setGraphicsEffect(cast(Any, None)))
     group.start()
     widget.setProperty("_slide_anim", group)
     return group
@@ -166,7 +174,7 @@ def shake(widget: QWidget) -> QSequentialAnimationGroup:
         anim = QPropertyAnimation(widget, b"pos", widget)
         anim.setDuration(50)
         anim.setEndValue(QPoint(origin.x() + dx, origin.y()))
-        anim.setEasingCurve(QEasingCurve.OutSine)
+        anim.setEasingCurve(cast(Any, QEasingCurve.Type.OutSine))
         group.addAnimation(anim)
 
     group.start()

@@ -1,13 +1,13 @@
 # ui/components/ring_progress.py
 from PySide6.QtCore import Property, QEasingCurve, QPropertyAnimation, QRectF, Qt
-from PySide6.QtGui import QColor, QFont, QPainter, QPen
+from PySide6.QtGui import QColor, QFont, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 from ui.styles.dashboard_theme import FONT
 
 
-class _RingCanvas(QWidget):
-    """Кастомный виджет рисующий дугу."""
+class _RingCanvas(QLabel):
+    """Кастомный виджет рисующий дугу через QPixmap (для стабильности)."""
     def __init__(self, target_pct: int, parent=None):
         super().__init__(parent)
         self.setFixedSize(140, 140)
@@ -35,18 +35,21 @@ class _RingCanvas(QWidget):
 
     def set_arc_value(self, val: float):
         self._current_value = val
-        self.update()
+        self._render_pixmap()
 
     arc_value = Property(float, get_arc_value, set_arc_value)
 
-    def paintEvent(self, event):
-        p = QPainter(self)
+    def _render_pixmap(self):
+        pix = QPixmap(self.size())
+        pix.fill(Qt.GlobalColor.transparent)
+        
+        p = QPainter(pix)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        r = QRectF(7, 7, 126, 126) # 140-14=126
+        r = QRectF(7, 7, 126, 126)
 
         # Фоновое кольцо
-        bg_pen = QPen(QColor(255, 255, 255, 20)) # 0.08
+        bg_pen = QPen(QColor(255, 255, 255, 20))
         bg_pen.setWidth(14)
         bg_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         p.setPen(bg_pen)
@@ -58,24 +61,23 @@ class _RingCanvas(QWidget):
             val_pen.setWidth(14)
             val_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
             p.setPen(val_pen)
-
-            # Qt angles are in 1/16ths of a degree, starting at 3 o'clock
-            # We want to start at 12 o'clock (90 deg) and go clockwise (- direction)
             start_angle = 90 * 16
             span_angle = int(- (self._current_value / 100.0) * 360 * 16)
             p.drawArc(r, start_angle, span_angle)
 
-        # Текст в центре
+        # Текст
         p.setPen(self.arc_color)
         p.setFont(QFont(FONT, 28, QFont.Weight.ExtraBold))
         text_val = str(int(self._current_value))
         p.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, text_val)
 
-        p.setPen(QColor(255, 255, 255, 115)) # 0.45
+        p.setPen(QColor(255, 255, 255, 115))
         p.setFont(QFont(FONT, 9, QFont.Weight.Bold))
-        # Сдвиг вниз
         r2 = QRectF(0, 30, self.width(), self.height())
         p.drawText(r2, Qt.AlignmentFlag.AlignCenter, "БАЛЛ")
+        
+        p.end()
+        self.setPixmap(pix)
 
 
 class RingProgress(QFrame):
